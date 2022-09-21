@@ -5,6 +5,9 @@ using TMPro;
 
 public class NotificationManager : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI notificationText;
+    [SerializeField] private float fadeTime;
+
     public static NotificationManager Instance
     {
         get
@@ -26,6 +29,9 @@ public class NotificationManager : MonoBehaviour
         }
     }
 
+    private static NotificationManager instance;
+
+    private IEnumerator notficationCouroutine;
 
     public static NotificationManager CreateNewInstance()
     {
@@ -35,9 +41,6 @@ public class NotificationManager : MonoBehaviour
         return instance;
     }
 
-
-    private static NotificationManager instance;
-
     private void Awake()
     {
         if (Instance != this)
@@ -45,14 +48,6 @@ public class NotificationManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
-    [SerializeField] private TextMeshProUGUI notificationText;
-    [SerializeField] private float fadeTime;
-
-
-    private IEnumerator notficationCouroutine;
-
-
 
     public void SetNewNotification(string message)
     {
