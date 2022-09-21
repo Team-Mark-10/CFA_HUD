@@ -11,10 +11,12 @@ public class TestNotification : MonoBehaviour
 
    private void Update() 
    {
+        Debug.Log(Time.time);
     if(Time.time > 5f)
     {
+
         NotificationManager.Instance.SetNewNotification("coding is cool");
-        Destory(gameObject); 
+        Destroy(gameObject); 
     }
    }
 }
