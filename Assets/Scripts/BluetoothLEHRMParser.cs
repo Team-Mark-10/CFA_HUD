@@ -79,6 +79,9 @@ public class CFAAdvertisementDetails : AdvertisementDetails
     }
 }
 
+
+#endif
+
 public class BLEAdvertiser
 {
     public ulong Address { get; private set; }
@@ -90,10 +93,17 @@ public class BLEAdvertiser
         LocalName = localName;
     }
 }
-#endif
 
+public class AdvertiserAddedEventArgs : EventArgs
+{
+    public BLEAdvertiser Advertiser { get { return advertiser;  } }
+    private BLEAdvertiser advertiser;
 
-
+    public AdvertiserAddedEventArgs(BLEAdvertiser advertiser)
+    {
+        this.advertiser = advertiser;
+    }
+}
 
 public class BluetoothLEHRMParser : MonoBehaviour
 {
@@ -103,9 +113,12 @@ public class BluetoothLEHRMParser : MonoBehaviour
      private BluetoothLEAdvertisementWatcher bleWatcher;
     
      private List<CFAAdvertisementDetails> Advertisements = new List<CFAAdvertisementDetails>();
-     private List<BLEAdvertiser> Advertisers = new List<BLEAdvertiser>();
      private List<CFAAdvertisementDetails> AdvertiserSpecificAdvertisements = new List<CFAAdvertisementDetails>();
 #endif
+    private List<BLEAdvertiser> Advertisers = new List<BLEAdvertiser>();
+
+    public event EventHandler<AdvertiserAddedEventArgs> AdvertiserAdded;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -137,6 +150,11 @@ public class BluetoothLEHRMParser : MonoBehaviour
                 
 #endif
 
+    }
+
+    void AddAdvertiser(BLEAdvertiser advertiser)
+    {
+        AdvertiserAdded.Invoke(this, new AdvertiserAddedEventArgs(advertiser));
     }
 
 #if ENABLE_WINMD_SUPPORT
@@ -172,7 +190,9 @@ public class BluetoothLEHRMParser : MonoBehaviour
 
         if (advertiser == null)
         {
-            Advertisers.Add(new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName));
+            
+            AddAdvertiser(new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName));
+
 
         }
         else
@@ -183,5 +203,11 @@ public class BluetoothLEHRMParser : MonoBehaviour
         }
     }
 
+   
+
 #endif
+    public List<BLEAdvertiser> GetAdvertisers()
+    {
+        return Advertisers;
+    }
 }
