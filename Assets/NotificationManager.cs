@@ -1,80 +1,79 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
+using TMPro; 
 
 public class NotificationManager : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI notificationText;
-    [SerializeField] private float fadeTime;
+   public static NotificationManager Instance  
+   {
+       get {
+           if(instance != null) //if the code does exist then it will return it 
+           {
+               return instance; 
+           }
+           instance = FindObjectOfType <NotificationManager>();  // The first active loaded object that matches the specified type. It returns null if no Object matches the type.
 
-    public static NotificationManager Instance
+           if(instance != null) // might not be stored but it exists so will get and set 
+           {
+               return instance; 
+           }
+
+           CreateNewInstance(); //if get here it def doesnt exist so will need to create a new one 
+
+           return instance; 
+       }
+   }
+ public static NotificationManager CreateNewInstance()
+   {
+       NotificationManager notificationManagerPrefab = resource.Load<NotificationManager>("NotificationManager");
+       instance = Instantiate(notificationManagerPrefab); //the type we are looking for , will filter the assets or resrouces for all the types, specifcially looking for notifcation 
+//has a reference so can store and then return
+       return instance;
+   } 
+   //prefab allows for create / store gameObject - is a template 
+
+ 
+    private static NotificationManager instance; 
+
+    private voide Awake() //opens on start up 
     {
-        get
+        if(Instance != this)
         {
-            if (instance != null)
-            {
-                return instance;
-            }
-            instance = FindObjectOfType<NotificationManager>();
-
-            if (instance != null)
-            {
-                return instance;
-            }
-
-            CreateNewInstance();
-
-            return instance;
+            Destory(gameObject); //will get rid of duplicate 
         }
     }
 
-    private static NotificationManager instance;
+    [SerializeField] private TextMeshProUGUI notificationText; //pops up on opening 
+    [SerializeField] private float fadeTime; //how long it takes to fade out on the screen 
 
-    private IEnumerator notficationCouroutine;
 
-    public static NotificationManager CreateNewInstance()
+    private IEnumerator notficationCouroutine; 
+
+
+
+    public void SetNotification(string message) 
     {
-        NotificationManager notificationManagerPrefab = Resources.Load<NotificationManager>("NotificationManager");
-        instance = Instantiate(notificationManagerPrefab);
-
-        return instance;
-    }
-
-    private void Awake()
-    {
-        if (Instance != this)
+        if(notficationCouroutine !=null)  
         {
-            Destroy(gameObject);
+            StopCouroutine(notficationCouroutine);
         }
-    }
+        notficationCouroutine = FadeOUtNotification(message); 
+        StartCouroutine(notficationCouroutine)
+    } //if its not null then stop it which will make it null, then this will make a coutoutine to set it too, string will pass the message through 
+    
 
-    public void SetNewNotification(string message)
-    {
-        if (notficationCouroutine != null)
+    private IEnumerator FadeOUtNotification(string message){   //building the couroutine, sets the text 
+        notificationText.text = message; //notification in game will be set to whatever we want it to say 
+        float t = 0; // make it fade out over time 
+        while(t < fadeTime)
         {
-            StopCoroutine(notficationCouroutine);
-        }
-        notficationCouroutine = FadeOutMessage(message);
-        StartCoroutine(notficationCouroutine);
-    }
-
-
-    private IEnumerator FadeOutMessage(string message)
-    {
-        notificationText.text = message;
-        float t = 0;
-        while (t < fadeTime)
-        {
-            t += Time.unscaledDeltaTime;
-            notificationText.color = new Color(
-            notificationText.color.r,
+            t += Time.unscaledDeltaTime; //time is real time - will keep going if game paused etc 
+            notificationText.color = new Color( //changes the colour every frame 
+            notificationText.color.r, 
             notificationText.color.g,
             notificationText.color.b,
-            Mathf.Lerp(1f, 0f, t / fadeTime));
-            yield return null;
+            Mathf.Lerp(1f, 0f, t /fadeTime)); // fading out 
+            yield return null; // will allow it to take time over frames otherwise it will just go in one frame 
         }
     }
-
-
-}
