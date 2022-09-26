@@ -146,14 +146,17 @@ public class BluetoothLEHRMParser : MonoBehaviour
     {
 
 #if ENABLE_WINMD_SUPPORT
-                heartRateText.text = "Total Count: " + Advertisements.Count + ", Latest: " + Advertisements[Advertisements.Count - 1].HeartRate.ToString();
-                
+        if(Advertisements.Count > 0) {
+            heartRateText.text = "Total Count: " + Advertisements.Count + ", Latest: " + Advertisements[Advertisements.Count - 1].HeartRate.ToString();
+        } 
 #endif
 
     }
 
     void AddAdvertiser(BLEAdvertiser advertiser)
     {
+        Debug.Log("Adding advertiser at parser");
+        Advertisers.Add(advertiser);
         AdvertiserAdded.Invoke(this, new AdvertiserAddedEventArgs(advertiser));
     }
 
@@ -181,19 +184,12 @@ public class BluetoothLEHRMParser : MonoBehaviour
     private void OnAdvertisementRecieved(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs args)
     {
         BLEAdvertiser advertiser = FindAdvertiser(args.BluetoothAddress);
-
         CFAAdvertisementDetails details = new CFAAdvertisementDetails(args);
-
         Advertisements.Add(details);
-
-        heartRateText.text = details.HeartRate.ToString() + " Total Count: " + Advertisements.Count;
 
         if (advertiser == null)
         {
-            
             AddAdvertiser(new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName));
-
-
         }
         else
         {
