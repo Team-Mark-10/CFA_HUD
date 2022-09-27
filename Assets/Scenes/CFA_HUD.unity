@@ -139,6 +139,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 964243480267200418}
     - target: {fileID: 4523328371086833924, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: deadSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 4e60f28162095b048872ff0f24d09261, type: 3}
+    - target: {fileID: 4523328371086833924, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: selectorGO
       value: 
       objectReference: {fileID: 1443709800}
@@ -350,7 +354,7 @@ MonoBehaviour:
   debounceThreshold: 0.01
   localForward: {x: -0, y: -0, z: -1}
   localUp: {x: 0, y: 1, z: 0}
-  localCenter: {x: 0.11, y: -0.128, z: -0.05}
+  localCenter: {x: 0.11, y: -0.128, z: -0.015}
   bounds: {x: 0.22, y: 0.256}
   touchableCollider: {fileID: 618093051}
 --- !u!65 &618093051
@@ -365,7 +369,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.22, y: 0.256, z: 0.001}
-  m_Center: {x: 0.11, y: -0.128, z: 0.051}
+  m_Center: {x: 0.11, y: -0.128, z: 0.015999999}
 --- !u!114 &618093052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -422,7 +426,7 @@ MonoBehaviour:
   tiersPerPage: 4
   cellWidth: 0.22
   cellHeight: 0.064
-  cellDepth: 0.1
+  cellDepth: 0.03
   bounceMultiplier: 0.1
   OnClick:
     m_PersistentCalls:
@@ -453,7 +457,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 618093049}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.0721, y: 0.0298, z: -0.011}
+  m_LocalPosition: {x: 0.0721, y: 0.0298, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1010,7 +1014,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1375487720}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 75fa637a68e599040bdd08afc22b3bfa, type: 3}
   m_Name: 
@@ -1042,7 +1046,7 @@ Transform:
   m_GameObject: {fileID: 1375487720}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.11, y: -0.128, z: 0}
-  m_LocalScale: {x: 0.22, y: 0.256, z: 0.1}
+  m_LocalScale: {x: 0.22, y: 0.256, z: 0.03}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 618093054}
@@ -1096,7 +1100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   togglePrefab: {fileID: 4732121472960002156, guid: 71fa5f4193c06d34ab9f62da6ee2670a, type: 3}
-  toggleParent: {fileID: 561720956}
+  toggleParent: {fileID: 561720958}
   debugText: {fileID: 1092779457}
 --- !u!1 &1496934964
 GameObject:
@@ -1389,7 +1393,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 964243480267200418}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.36205506, y: 0, z: 0.67804873}
+  m_LocalPosition: {x: 0.36205506, y: 0, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2014,7 +2018,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8451469530625903540}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.211, y: 0, z: 0.6}
+  m_LocalPosition: {x: -0.211, y: 0, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

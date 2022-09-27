@@ -29,7 +29,7 @@ public class PatientSelectionUpdatedEventArgs : EventArgs
 public class PatientSelectionManager : MonoBehaviour
 {
     public GameObject togglePrefab;
-    public GameObject toggleParent;
+    public GridObjectCollection toggleParent;
     public TMP_Text debugText;
 
 
@@ -117,6 +117,12 @@ public class PatientSelectionManager : MonoBehaviour
 
     private void InstantiateToggle(Patient patient)
     {
+        StartCoroutine(InstantiateToggleCoroutine(patient));
+
+    }
+
+    private IEnumerator InstantiateToggleCoroutine(Patient patient)
+    {
         var toggleGameObject = Instantiate(togglePrefab, toggleParent.transform);
         
         PatientSelectorToggle toggleComponent = toggleGameObject.GetComponent<PatientSelectorToggle>();
@@ -127,8 +133,10 @@ public class PatientSelectionManager : MonoBehaviour
         toggleComponent.AddToggleDeselectedListener(OnButtonToggle);
 
         toggles.Add(toggleComponent);
-
-        toggleParent.GetComponentInParent<GridObjectCollection>().UpdateCollection();
+        yield return new WaitForEndOfFrame();
+        toggleParent.UpdateCollection();
+        yield return new WaitForEndOfFrame();
+        GetComponentInChildren<ScrollingObjectCollection>().UpdateContent();
 
         Debug.Log("Toggle instantiated");
     }
