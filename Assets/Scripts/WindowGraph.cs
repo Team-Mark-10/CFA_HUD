@@ -18,6 +18,7 @@ public class WindowGraph : MonoBehaviour
 
     [SerializeField]
     private Sprite circleSprite;
+    private Sprite deadSprite;
 
     [SerializeField]
     private GameObject parserGO;
@@ -87,7 +88,7 @@ public class WindowGraph : MonoBehaviour
     /// </summary>
     /// <param name="patientBPMData">List of BPM data</param>
     /// <param name="colour">The colour of the line to be drawn</param>
-    private void RenderLine(int lineIndex, List<BPMEntry> patientBPMData, Color32 colour)
+    private void RenderLine(int lineIndex, List<BPMEntry> patientBPMData, Color32 colour, string key)
     {
         GameObject lastCircleGameObject = null;
         for (int i = 0; i < patientBPMData.Count; i++)
@@ -97,7 +98,7 @@ public class WindowGraph : MonoBehaviour
             float yPosition = patientBPMData[i].BPM + yMinimum;
 
             GameObject circleGameObject =
-                CreateCircle(new Vector2(xPosition, yPosition), colour);
+                CreateCircle(new Vector2(xPosition, yPosition), colour,Latest.ContainsKey(key));
 
             chartObjectList.Add(circleGameObject);
 
@@ -133,12 +134,19 @@ public class WindowGraph : MonoBehaviour
     /// <param name="anchoredPosition"></param>
     /// <param name="colour"></param>
     /// <returns></returns>
-    private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour)
+    private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool alive)
     {
         GameObject gameObject = new("circle", typeof(Image));
 
         gameObject.transform.SetParent(graphContainer, false);
-        gameObject.GetComponent<Image>().sprite = circleSprite;
+        if (alive)
+        {
+            gameObject.GetComponent<Image>().sprite = circleSprite;
+        } else
+        {
+            gameObject.GetComponent<Image>().sprite = deadSprite;
+        }
+      
 
         RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = anchoredPosition;
@@ -233,32 +241,27 @@ public class WindowGraph : MonoBehaviour
         }
         chartObjectList.Clear();
 
-        ////GrabBluetooth ID Data
-        //var BPM = UnityEngine.Random.Range(0, 200);
-        //var confidence = UnityEngine.Random.Range(40, 100);
-        //var ID = "1";
-
-        ////run perbluetooth update.
-        //Hasher(ID, BPM, confidence);
-
-        // Update from the cache
+        
         foreach(var entry in Latest)
         {
             AppendLineEntry(entry.Key, entry.Value);
         }
 
-        Latest.Clear();
+   
 
         int index = 0;
         foreach (string key in Lines.Keys)
         {
             if(!filterIds.Contains(key))
             {
-                RenderLine(index, Lines[key], GetColour(index));
+                RenderLine(index, Lines[key], GetColour(index),key);
             }
             index++;
 
         }
+
+        Latest.Clear();
+
     }
 
     /// <summary>
