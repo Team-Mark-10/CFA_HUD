@@ -134,6 +134,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Graph
       objectReference: {fileID: 0}
+    - target: {fileID: 4523328371734076818, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 4523328371734076819, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: m_PresetInfoIsWorld
       value: 1
@@ -148,7 +152,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4523328371734076829, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4523328371734076829, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: m_AnchorMax.x
@@ -2013,7 +2017,7 @@ GameObject:
   - component: {fileID: 7076764494121431565}
   - component: {fileID: 8451469530625903544}
   m_Layer: 0
-  m_Name: HeartRateGraph
+  m_Name: HeartRateGraphPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

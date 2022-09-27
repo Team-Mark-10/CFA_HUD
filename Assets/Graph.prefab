@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4523328371734076819}
   - component: {fileID: 4523328371734076816}
   - component: {fileID: 6173860927939242483}
+  - component: {fileID: 6917521405079757247}
   m_Layer: 5
   m_Name: Graph
   m_TagString: Untagged
@@ -115,6 +116,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4e3b9019304b5aaec5664de0778d21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6917521405079757247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649456472849636781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fcaf896491074042b7ed7684454a412, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventsToReceive: 0
+  debounceThreshold: 0.01
 --- !u!1 &4523328370815206510
 GameObject:
   m_ObjectHideFlags: 0
