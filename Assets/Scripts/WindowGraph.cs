@@ -13,11 +13,17 @@ public class WindowGraph : MonoBehaviour
     private readonly float yMinimum = 50f;
     private readonly float xSize = 50f;
 
-    private readonly Font heartRateTextFont = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+    private Font heartRateTextFont;
     private readonly Color32[] Colours = new[] { new Color32(255, 0, 0, 100), new Color32(0, 255, 0, 100), new Color32(0, 0, 255, 100), new Color32(0, 255, 255, 100) };
 
     [SerializeField]
     private Sprite circleSprite;
+
+    [SerializeField]
+    private GameObject parserGO;
+
+    [SerializeField]
+    private GameObject selectorGO;
 
     private RectTransform graphContainer;
 
@@ -32,6 +38,7 @@ public class WindowGraph : MonoBehaviour
 
     private void Awake()
     {
+        heartRateTextFont = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
         graphContainer =
             transform.Find("graphContainer").GetComponent<RectTransform>();
 
@@ -39,6 +46,40 @@ public class WindowGraph : MonoBehaviour
 
         // Sets the graph to regenerate every second.
         InvokeRepeating("GenerateChart", 1.0f, 1.0f);
+    }
+
+    private void Start()
+    {
+        var parser = parserGO.GetComponent<BluetoothLEHRMParser>();
+
+#if ENABLE_WINMD_SUPPORT
+         parser.AdvertisementReceived += OnAdvertisementReceived;
+#endif
+
+
+        var selector = selectorGO.GetComponent<PatientSelectionManager>();
+        selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
+    }
+
+#if ENABLE_WINMD_SUPPORT
+    private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
+    {
+        AddEntry(e.Advertiser.Address.ToString(), new BPMEntry(e.Advertisement.HeartRate, e.Advertisement.Confidence));
+    }
+#endif
+
+    private void OnPatientSelectionUpdated(object sender, PatientSelectionUpdatedEventArgs e)
+    {
+        filterIds.Clear();
+
+        foreach (var activationState in e.PatientActivation)
+        {
+            Debug.Log($"{activationState.Key} -- {activationState.Value}");
+            if(!activationState.Value)
+            {
+                filterIds.Add(activationState.Key);
+            }
+        }
     }
 
     /// <summary>

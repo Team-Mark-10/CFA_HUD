@@ -134,6 +134,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Graph
       objectReference: {fileID: 0}
+    - target: {fileID: 4523328371086833924, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: parserGO
+      value: 
+      objectReference: {fileID: 964243480267200418}
+    - target: {fileID: 4523328371086833924, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: selectorGO
+      value: 
+      objectReference: {fileID: 1443709800}
     - target: {fileID: 4523328371734076818, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: m_Camera
       value: 
@@ -1007,32 +1015,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75fa637a68e599040bdd08afc22b3bfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  renderers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  renderers: []
   clippingSide: -1
   useOnPreRender: 0
   applyToSharedMaterial: 0

@@ -16,6 +16,16 @@ public class Patient
         Advertiser = advertiser;
     }
 }
+
+public class PatientSelectionUpdatedEventArgs : EventArgs
+{
+    public Dictionary<string, bool> PatientActivation { get; private set; }
+
+    public PatientSelectionUpdatedEventArgs(Dictionary<string, bool> patientActivation)
+    {
+        PatientActivation = patientActivation;
+    }
+}
 public class PatientSelectionManager : MonoBehaviour
 {
     public GameObject togglePrefab;
@@ -26,8 +36,26 @@ public class PatientSelectionManager : MonoBehaviour
     private List<PatientSelectorToggle> toggles;
     private BluetoothLEHRMParser parser;
 
-    private List<Patient> creationQueue = new();
+    private readonly List<Patient> creationQueue = new();
     private bool isOutputDirty = false;
+
+    public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;
+
+    protected virtual void OnPatientSelectionUpdated()
+    {
+        Dictionary<string, bool> activation = new();
+
+        foreach(var toggle in toggles)
+        {
+            activation.Add(toggle.Patient.Advertiser.Address.ToString(), toggle.IsToggled);
+        }
+
+        Debug.Log(activation.ToString());
+
+        PatientSelectionUpdated.Invoke(this, new PatientSelectionUpdatedEventArgs(activation));
+
+        isOutputDirty = true;
+    }
 
     void Start()
     {
@@ -50,8 +78,6 @@ public class PatientSelectionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-
         if (creationQueue.Count > 0)
         {
             foreach (var patient in creationQueue)
@@ -62,7 +88,7 @@ public class PatientSelectionManager : MonoBehaviour
             creationQueue.Clear();
             UpdateText();
         }
-
+         
         if (isOutputDirty)
         {
             UpdateText();
@@ -70,8 +96,10 @@ public class PatientSelectionManager : MonoBehaviour
         }
     }
 
-    void OnButtonToggle(object sender, bool isSelected)
+    void OnButtonToggle()
     {
+        Debug.Log("Button Toggled");
+        OnPatientSelectionUpdated();
         isOutputDirty = true;
     }
 
@@ -95,8 +123,8 @@ public class PatientSelectionManager : MonoBehaviour
 
         toggleComponent.Patient = patient;
 
-        toggleComponent.ToggleSelected += (sender, e) => OnButtonToggle(sender, true);
-        toggleComponent.ToggleDeselected += (sender, e) => OnButtonToggle(sender, false);
+        toggleComponent.AddToggleSelectedListener(OnButtonToggle);
+        toggleComponent.AddToggleDeselectedListener(OnButtonToggle);
 
         toggles.Add(toggleComponent);
 

@@ -15,33 +15,21 @@ public class PatientSelectorToggle : MonoBehaviour
         set { GetComponent<Interactable>().IsToggled = value; }
     }
 
-
-    public event EventHandler ToggleSelected;
-    public event EventHandler ToggleDeselected;
-
-
-    protected virtual void OnToggleSelected(EventArgs e)
+    public void AddToggleSelectedListener(UnityEngine.Events.UnityAction call)
     {
-        EventHandler handler = ToggleSelected;
-        handler.Invoke(this, e);
+        GetComponent<Interactable>().GetReceiver<InteractableOnToggleReceiver>().OnSelect.AddListener(call);
     }
 
-    protected virtual void OnToggleDeselected(EventArgs e)
+    public void AddToggleDeselectedListener(UnityEngine.Events.UnityAction call)
     {
-        EventHandler handler = ToggleDeselected;
-        handler.Invoke(this, e);
+        GetComponent<Interactable>().GetReceiver<InteractableOnToggleReceiver>().OnDeselect.AddListener(call);
+
     }
 
     // Start is called before the first frame update
     void Start()
     {
         GetComponentInChildren<TextMesh>().text = Patient.Name;
-
-        var receiver = GetComponent<Interactable>().GetReceiver<InteractableOnToggleReceiver>();
-
-        receiver.OnSelect.AddListener(() => OnToggleSelected(new EventArgs()));
-        receiver.OnDeselect.AddListener(() => OnToggleDeselected(new EventArgs()));
-
     }
 
     // Update is called once per frame
