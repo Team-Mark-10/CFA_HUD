@@ -18,6 +18,7 @@ public class WindowGraph : MonoBehaviour
 
     [SerializeField]
     private Sprite circleSprite;
+    [SerializeField]
     private Sprite deadSprite;
 
     [SerializeField]
