@@ -5,6 +5,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class WindowGraph : MonoBehaviour
 {
@@ -32,9 +33,9 @@ public class WindowGraph : MonoBehaviour
     private List<GameObject> chartObjectList;
 
     public List<string> FilterIds { get => filterIds; }
-    private readonly List<string>  filterIds = new();
+    private readonly List<string> filterIds = new();
 
-    private readonly Dictionary<string, List<BPMEntry>> Lines = new();
+    private readonly Dictionary<string, Queue<CheckedBPMEntry>> Lines = new();
     private readonly Dictionary<string, BPMEntry> Latest = new();
 
 
@@ -77,7 +78,7 @@ public class WindowGraph : MonoBehaviour
         foreach (var activationState in e.PatientActivation)
         {
             Debug.Log($"{activationState.Key} -- {activationState.Value}");
-            if(!activationState.Value)
+            if (!activationState.Value)
             {
                 filterIds.Add(activationState.Key);
             }
@@ -89,7 +90,7 @@ public class WindowGraph : MonoBehaviour
     /// </summary>
     /// <param name="patientBPMData">List of BPM data</param>
     /// <param name="colour">The colour of the line to be drawn</param>
-    private void RenderLine(int lineIndex, List<BPMEntry> patientBPMData, Color32 colour, string key)
+    private void RenderLine(int lineIndex, List<CheckedBPMEntry> patientBPMData, Color32 colour)
     {
         GameObject lastCircleGameObject = null;
         for (int i = 0; i < patientBPMData.Count; i++)
@@ -99,7 +100,7 @@ public class WindowGraph : MonoBehaviour
             float yPosition = patientBPMData[i].BPM + yMinimum;
 
             GameObject circleGameObject =
-                CreateCircle(new Vector2(xPosition, yPosition), colour,Latest.ContainsKey(key));
+                CreateCircle(new Vector2(xPosition, yPosition), colour, patientBPMData[i].IsAssumed);
 
             chartObjectList.Add(circleGameObject);
 
@@ -135,19 +136,22 @@ public class WindowGraph : MonoBehaviour
     /// <param name="anchoredPosition"></param>
     /// <param name="colour"></param>
     /// <returns></returns>
-    private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool alive)
+    private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool isAssumed)
     {
         GameObject gameObject = new("circle", typeof(Image));
 
         gameObject.transform.SetParent(graphContainer, false);
-        if (alive)
-        {
-            gameObject.GetComponent<Image>().sprite = circleSprite;
-        } else
+        if (isAssumed)
         {
             gameObject.GetComponent<Image>().sprite = deadSprite;
+
         }
-      
+        else
+        {
+            gameObject.GetComponent<Image>().sprite = circleSprite;
+
+        }
+
 
         RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = anchoredPosition;
@@ -242,27 +246,53 @@ public class WindowGraph : MonoBehaviour
         }
         chartObjectList.Clear();
 
-        
-        foreach(var entry in Latest)
+        var ids = Lines.Keys.Union(Latest.Keys);
+
+        foreach (var lineId in ids)
         {
-            AppendLineEntry(entry.Key, entry.Value);
+            if (Latest.ContainsKey(lineId))
+            {
+                AppendLineEntry(lineId, new CheckedBPMEntry(Latest[lineId], false));
+            }
+            else
+            {
+                AppendAssumedLineEntry(lineId);
+            }
         }
 
-   
+        Latest.Clear();
 
         int index = 0;
         foreach (string key in Lines.Keys)
         {
-            if(!filterIds.Contains(key))
+            if (!filterIds.Contains(key))
             {
-                RenderLine(index, Lines[key], GetColour(index),key);
+                RenderLine(index, Lines[key].ToList(), GetColour(index));
             }
             index++;
 
         }
 
-        Latest.Clear();
 
+    }
+
+    private void AppendAssumedLineEntry(string id)
+    {
+        //Attemtps to add a value to the hashmap using the ID., Skips this step if it already exists.
+        if (Lines.ContainsKey(id))
+        {
+            Lines.TryGetValue(id, out Queue<CheckedBPMEntry> entries);
+
+            entries.Enqueue(entries.Last());
+            entries.Dequeue();
+        }
+        else
+        {
+            // Generates a list of (0,0) vectors to pad the new list.
+            var queue = new Queue<CheckedBPMEntry>(Enumerable.Range(0, DotCount - 1).Select(x => new CheckedBPMEntry(0, 0, true)));
+
+            Lines.Add(id, queue);
+        }
     }
 
     /// <summary>
@@ -272,11 +302,12 @@ public class WindowGraph : MonoBehaviour
     /// <param name="entry"></param>
     public void AddEntry(string id, BPMEntry entry)
     {
-        if(Latest.ContainsKey(id))
+        if (Latest.ContainsKey(id))
         {
             Latest[id] = entry;
 
-        } else
+        }
+        else
         {
             Latest.Add(id, entry);
         }
@@ -287,22 +318,22 @@ public class WindowGraph : MonoBehaviour
     /// </summary>
     /// <param name="id"></param>
     /// <param name="entry"></param>
-    public void AppendLineEntry(string id, BPMEntry entry)
+    public void AppendLineEntry(string id, CheckedBPMEntry entry)
     {
         //Attemtps to add a value to the hashmap using the ID., Skips this step if it already exists.
         if (Lines.ContainsKey(id))
         {
-            List<BPMEntry> entries;
-            Lines.TryGetValue(id, out entries);
+            Lines.TryGetValue(id, out Queue<CheckedBPMEntry> entries);
 
-            entries.Add(entry);
-            entries.RemoveAt(0);
+            entries.Enqueue(entry);
+            entries.Dequeue();
         }
         else
         {
-            // Generates a list of (0,0) vectors to pad the new list.
-            var list = Enumerable.Range(0, DotCount - 1).Select(x => new BPMEntry(0,0)).ToList(); 
-            Lines.Add(id, list);
+            // Generates a list of (0,0) vectors to pad the new queue.
+            var queue = new Queue<CheckedBPMEntry>(Enumerable.Range(0, DotCount - 1).Select(x => new CheckedBPMEntry(0, 0, true)));
+
+            Lines.Add(id, queue);
         }
 
     }
@@ -318,9 +349,24 @@ public class BPMEntry
     public int BPM { get; set; }
     public int Confidence { get; set; }
 
-    public BPMEntry(int bPM, int confidence)
+    public BPMEntry(int bpm, int confidence)
     {
-        BPM = bPM;
+        BPM = bpm;
         Confidence = confidence;
+    }
+}
+
+public class CheckedBPMEntry : BPMEntry
+{
+    public bool IsAssumed { get; private set; }
+
+    public CheckedBPMEntry(int bpm, int confidence, bool isAssumed) : base(bpm, confidence)
+    {
+        IsAssumed = isAssumed;
+    }
+
+    public CheckedBPMEntry(BPMEntry entry, bool isAssumed) : base(entry.BPM, entry.Confidence)
+    {
+        IsAssumed = isAssumed;
     }
 }
