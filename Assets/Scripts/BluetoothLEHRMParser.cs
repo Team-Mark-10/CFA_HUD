@@ -56,8 +56,6 @@ public class AdvertisementDetails
 
             dsStrings.Add(output);
         }
-
-        Debug.Log(String.Join(", ", dsStrings));
     }
 }
 
@@ -75,9 +73,11 @@ public class CFAAdvertisementDetails : AdvertisementDetails
 
         HeartRate = data[2];
         Confidence = data[3];
-        Debug.Log("Heart Rate: " + HeartRate + ", Confidence: " + Confidence);
     }
 }
+
+
+#endif
 
 public class BLEAdvertiser
 {
@@ -90,10 +90,36 @@ public class BLEAdvertiser
         LocalName = localName;
     }
 }
+
+public class AdvertiserAddedEventArgs : EventArgs
+{
+    public BLEAdvertiser Advertiser { get { return advertiser;  } }
+    private BLEAdvertiser advertiser;
+
+    public AdvertiserAddedEventArgs(BLEAdvertiser advertiser)
+    {
+        this.advertiser = advertiser;
+    }
+}
+
+#if ENABLE_WINMD_SUPPORT
+public class AdvertisementReceivedEventArgs : EventArgs
+{
+    public CFAAdvertisementDetails Advertisement { get { return advertisement; } }
+    private CFAAdvertisementDetails advertisement;
+
+    public BLEAdvertiser Advertiser { get { return advertiser;  } }
+    private BLEAdvertiser advertiser;
+
+    public AdvertisementReceivedEventArgs(CFAAdvertisementDetails advertisement, BLEAdvertiser advertiser)
+    {
+        this.advertisement = advertisement;
+        this.advertiser = advertiser;
+    }
+}
+
+
 #endif
-
-
-
 
 public class BluetoothLEHRMParser : MonoBehaviour
 {
@@ -103,9 +129,21 @@ public class BluetoothLEHRMParser : MonoBehaviour
      private BluetoothLEAdvertisementWatcher bleWatcher;
     
      private List<CFAAdvertisementDetails> Advertisements = new List<CFAAdvertisementDetails>();
-     private List<BLEAdvertiser> Advertisers = new List<BLEAdvertiser>();
      private List<CFAAdvertisementDetails> AdvertiserSpecificAdvertisements = new List<CFAAdvertisementDetails>();
 #endif
+    private List<BLEAdvertiser> Advertisers = new List<BLEAdvertiser>();
+
+    public event EventHandler<AdvertiserAddedEventArgs> AdvertiserAdded;
+
+#if ENABLE_WINMD_SUPPORT
+    public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
+
+    protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e) {
+        var handler = AdvertisementReceived;
+        handler?.Invoke(this,e);
+    }
+#endif
+
     // Start is called before the first frame update
     void Start()
     {
@@ -133,10 +171,18 @@ public class BluetoothLEHRMParser : MonoBehaviour
     {
 
 #if ENABLE_WINMD_SUPPORT
-                heartRateText.text = "Total Count: " + Advertisements.Count + ", Latest: " + Advertisements[Advertisements.Count - 1].HeartRate.ToString();
-                
+        if(Advertisements.Count > 0) {
+            heartRateText.text = "Total Count: " + Advertisements.Count + ", Latest: " + Advertisements[Advertisements.Count - 1].HeartRate.ToString();
+        } 
 #endif
 
+    }
+
+    void AddAdvertiser(BLEAdvertiser advertiser)
+    {
+        Debug.Log("Adding advertiser at parser");
+        Advertisers.Add(advertiser);
+        AdvertiserAdded.Invoke(this, new AdvertiserAddedEventArgs(advertiser));
     }
 
 #if ENABLE_WINMD_SUPPORT
@@ -163,25 +209,31 @@ public class BluetoothLEHRMParser : MonoBehaviour
     private void OnAdvertisementRecieved(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs args)
     {
         BLEAdvertiser advertiser = FindAdvertiser(args.BluetoothAddress);
-
         CFAAdvertisementDetails details = new CFAAdvertisementDetails(args);
 
         Advertisements.Add(details);
 
-        heartRateText.text = details.HeartRate.ToString() + " Total Count: " + Advertisements.Count;
-
         if (advertiser == null)
         {
-            Advertisers.Add(new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName));
+            var newAdvertiser = new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName);
+            AddAdvertiser(newAdvertiser);
+            OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details, newAdvertiser));
 
         }
         else
         {
             AdvertiserSpecificAdvertisements.Add(details);
+            OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details, advertiser));
 
             // UpdateRecentHistory();
         }
     }
 
+   
+
 #endif
+    public List<BLEAdvertiser> GetAdvertisers()
+    {
+        return Advertisers;
+    }
 }
