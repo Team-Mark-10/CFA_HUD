@@ -67,9 +67,33 @@ public class WindowGraph : MonoBehaviour
 #if ENABLE_WINMD_SUPPORT
     private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
     {
-        AddEntry(e.Advertiser.Address.ToString(), new BPMEntry(e.Advertisement.HeartRate, e.Advertisement.Confidence));
+        if (graphData.BluetoothID == e.Advertiser.BluetoothID) {
+           AddEntry(e.Advertiser.Address.ToString(), new BPMEntry(e.Advertisement.HeartRate, e.Advertisement.Confidence));
+        }
+
     }
 #endif
+
+    private GraphData SelectGraphType(string ID) {
+        //Takes a ID and applies a swtich statement based of prehardcoded ids
+        //This returns a MAX and MIN Y , a scale name and a graph name
+        switch (ID)
+        {
+            case "1":
+                return new GraphData(ID,"HeartRate","BPM",240,0);
+            case "2":
+
+                return new GraphData(ID,"Accler", "BPM", 240, 0);
+            case "3":
+
+                return new GraphData(ID,"Sleeptime", "BPM", 240, 0);
+            case "4":
+                return new GraphData(ID,"Speed", "BPM", 240, 0);
+            default:
+                Debug.Log("Unknown Blueooth ID.");
+                return new GraphData(ID,"Unknown", "", 300, 0);
+        }
+    }
 
     private void OnPatientSelectionUpdated(object sender, PatientSelectionUpdatedEventArgs e)
     {
@@ -295,11 +319,13 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
+
     /// <summary>
     /// Adds a value to the cache for the next render. Replaces value if it is already there to show the latest reading.
     /// </summary>
     /// <param name="id"></param>
     /// <param name="entry"></param>
+    /// 
     public void AddEntry(string id, BPMEntry entry)
     {
         if (Latest.ContainsKey(id))
@@ -312,6 +338,8 @@ public class WindowGraph : MonoBehaviour
             Latest.Add(id, entry);
         }
     }
+
+
 
     /// <summary>
     /// Adds entry to the line to render.
@@ -356,6 +384,7 @@ public class BPMEntry
     }
 }
 
+
 public class CheckedBPMEntry : BPMEntry
 {
     public bool IsAssumed { get; private set; }
@@ -368,5 +397,25 @@ public class CheckedBPMEntry : BPMEntry
     public CheckedBPMEntry(BPMEntry entry, bool isAssumed) : base(entry.BPM, entry.Confidence)
     {
         IsAssumed = isAssumed;
+    }
+}
+public class GraphData
+{
+
+    public string BluetoothID { get; set; }
+    public string Title { get; set; }
+
+    public string AxisLabel { get; set; }
+    public int Ymax { get; set; }
+
+    public int Ymin { get; set; }
+
+    public GraphData(string bluetoothID, string title, string axisLabel, int ymax, int ymin)
+    {
+        BluetoothID = bluetoothID;
+        Title = title;
+        AxisLabel = axisLabel;
+        Ymax = ymax;
+        Ymin = ymin;
     }
 }
