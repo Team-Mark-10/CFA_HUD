@@ -4,6 +4,8 @@ using System.Linq;
 using System;
 using UnityEngine;
 using TMPro;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 #if ENABLE_WINMD_SUPPORT
 using Windows.Devices.Bluetooth;
@@ -121,6 +123,8 @@ public class AdvertisementReceivedEventArgs : EventArgs
 
 #endif
 
+
+
 public class BluetoothLEHRMParser : MonoBehaviour
 {
     public TMP_Text heartRateText;
@@ -144,10 +148,14 @@ public class BluetoothLEHRMParser : MonoBehaviour
     }
 #endif
 
+    private HttpClient apiClient = new HttpClient();
+
+    const String API_URL = "http://localhost:8080";
+
     // Start is called before the first frame update
     void Start()
     {
-        
+
 #if ENABLE_WINMD_SUPPORT
             bleWatcher = new BluetoothLEAdvertisementWatcher();
 
@@ -163,8 +171,34 @@ public class BluetoothLEHRMParser : MonoBehaviour
             bleWatcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
 
             StartBleDeviceWatcher();
+
 #endif
+        TestDBConnection();
     }
+
+    /**
+     * Calls the API and sees if it is active. 
+     **/
+    async Task<bool> TestDBConnection()
+    {
+        Debug.Log("Testing API...");
+
+        var response = await apiClient.GetAsync($"{API_URL}/status");
+
+        Debug.Log($"API reports {response.StatusCode}");
+
+        return response.StatusCode == System.Net.HttpStatusCode.OK;
+    }
+
+#if ENABLE_WINMD_SUPPORT
+    async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements) 
+    {
+        
+    }
+#endif
+
+
+    
 
     // Update is called once per frame
     void Update()
