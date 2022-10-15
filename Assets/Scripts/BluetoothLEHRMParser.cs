@@ -7,6 +7,17 @@ using TMPro;
 using System.Net.Http;
 using System.Threading.Tasks;
 
+#if ENABLE_WINMD_SUPPORT
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Bluetooth.Advertisement;
+using Windows.Devices.Enumeration;
+using Windows.Storage.Streams;
+using System.Collections.ObjectModel;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.Security.Cryptography;
+#endif
+
 namespace CFA_HUD
 {
     public class PatientAddedEventArgs : EventArgs
@@ -161,7 +172,7 @@ namespace CFA_HUD
             if (patient == null)
             {
                 var advertiser = new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName);
-                 patient = AddAdvertiserAsPatient(advertiser);
+                 patient = AddAdvertiserAsPatient(advertiser, null);
             }
             
             CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);

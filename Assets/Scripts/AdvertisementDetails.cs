@@ -72,15 +72,28 @@ namespace CFA_HUD
         public CFAAdvertisementDetails(BluetoothLEAdvertisementReceivedEventArgs args, Patient patient) : base(args)
         {
             ContinuousData = new();
+
             // 0x16 is the flag for service data.
-            for (var dataSection in args.Advertisement.GetSectionsByType(0x16)) {
+            foreach (var dataSection in args.Advertisement.GetSectionsByType(0x16)) {
                 IBuffer buffer = dataSection.Data;
 
                 byte[] data = new byte[buffer.Length];
                 DataReader.FromBuffer(buffer).ReadBytes(data);
 
-                // Bytes 0 & 1 are the service ID, byte 2 is the value, byte 3 is the confidence. This is the schema that has been decided on by us.
-                ContinuousData.Add(new ContinuousData(BitConverter.ToString([data[0], data[1]]), data[2], data[3]);
+                // Byte Breakdown :
+                //  0 & 1: Service ID,
+                //  2,3,4,5: Float32 value as bytes
+                //  6: Confidence byte (confidence should be between 0-100, so only one byte is required.)
+                
+                string serviceId = BitConverter.ToString(data[0..2]);
+
+                int confidence = data[7];
+
+                byte[] value_bytes = data[2..6];             
+
+                float value = System.BitConverter.ToSingle(value_bytes, 0);
+
+                ContinuousData.Add(new ContinuousData(serviceId, value, confidence));
             }
 
             Patient = patient;
@@ -96,11 +109,11 @@ namespace CFA_HUD
     public class ContinuousData
     {
 
-        public int Value { get; private set; }
+        public float Value { get; private set; }
         public int Confidence { get; private set; }
         public string ServiceId { get; private set; }
 
-        public ContinuousData(string serviceId, int value, int confidence = 1)
+        public ContinuousData(string serviceId, float value, int confidence = 1)
         {
             ServiceId = serviceId;
             Value = value;
