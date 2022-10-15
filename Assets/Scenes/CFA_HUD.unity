@@ -1942,7 +1942,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb1969e3a27745448819a353ea8af184, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heartRateText: {fileID: 3055641091895664304}
+  debugText: {fileID: 3055641091895664304}
 --- !u!114 &7629401374898178640
 MonoBehaviour:
   m_ObjectHideFlags: 0
