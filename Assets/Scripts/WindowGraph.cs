@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,11 @@ namespace CFA_HUD
     public class WindowGraph : MonoBehaviour
     {
         public List<string> FilterIds { get; } = new();
-        public string ServiceId { get => serviceId; private set => serviceId = value; } 
+        public string ServiceId { get => serviceId; private set => serviceId = value; }
+        public string Title { get => title; set => title = value; }
+
+        [SerializeField]
+        private string title;
 
         [SerializeField]
         private string serviceId;
@@ -37,14 +42,14 @@ namespace CFA_HUD
         private readonly Dictionary<string, Queue<CheckedContinuousData>> Lines = new();
         private readonly Dictionary<string, ContinuousData> Latest = new();
 
-        private Font heartRateTextFont;
+        private Font valueTextFont;
 
         private RectTransform graphContainer;
 
 
         private void Awake()
         {
-            heartRateTextFont = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            valueTextFont = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             graphContainer =
                 transform.Find("graphContainer").GetComponent<RectTransform>();
 
@@ -60,6 +65,10 @@ namespace CFA_HUD
 
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
             selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
+
+            transform.Find("TitleText").GetComponent<TMP_Text>().text = title;
+
+
         }
 
         private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
@@ -128,8 +137,8 @@ namespace CFA_HUD
 
             float average = checkedData.ConvertAll((entry) => entry.Data.Value).Aggregate((a, b) => a + b) / checkedData.Count;
 
-            GameObject RollingHeartText = CreateValueText(new Vector2(xPositionText, yPositionText), colour, average);
-            chartObjectList.Add(RollingHeartText);
+            GameObject RollingValueText = CreateValueText(new Vector2(xPositionText, yPositionText), colour, average);
+            chartObjectList.Add(RollingValueText);
         }
 
         /// <summary>
@@ -216,9 +225,9 @@ namespace CFA_HUD
         private GameObject CreateValueText(Vector2 anchoredPosition, Color32 colour, float value)
         {
 
-            GameObject heartRateTextGameObject = new("HeartRateText", typeof(Text));
-            heartRateTextGameObject.transform.SetParent(graphContainer, false);
-            RectTransform rectTransform = heartRateTextGameObject.GetComponent<RectTransform>();
+            GameObject valueTextGameObject = new("ValueText", typeof(Text));
+            valueTextGameObject.transform.SetParent(graphContainer, false);
+            RectTransform rectTransform = valueTextGameObject.GetComponent<RectTransform>();
 
 
             rectTransform.anchoredPosition = anchoredPosition;
@@ -226,15 +235,15 @@ namespace CFA_HUD
             rectTransform.anchorMin = new(0, 0);
             rectTransform.anchorMax = new(0, 0);
 
-            Text text = heartRateTextGameObject.GetComponent<Text>();
+            Text text = valueTextGameObject.GetComponent<Text>();
 
-            text.font = heartRateTextFont;
+            text.font = valueTextFont;
             text.fontSize = 24;
             text.color = colour;
 
-            heartRateTextGameObject.GetComponent<UnityEngine.UI.Text>().text = value.ToString();
+            valueTextGameObject.GetComponent<UnityEngine.UI.Text>().text = value.ToString();
 
-            return heartRateTextGameObject;
+            return valueTextGameObject;
         }
 
         /// <summary>
