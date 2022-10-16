@@ -40,8 +40,8 @@ public class WindowGraph : MonoBehaviour
     public List<string> FilterIds { get => filterIds; }
     private readonly List<string> filterIds = new();
 
-    private readonly Dictionary<string, Queue<CheckedBPMEntry>> Lines = new();
-    private readonly Dictionary<string, BPMEntry> Latest = new();
+    private readonly Dictionary<string, Queue<CheckedDataEntry>> Lines = new();
+    private readonly Dictionary<string, DataEntry> Latest = new();
 
 
     private void Awake()
@@ -73,7 +73,7 @@ public class WindowGraph : MonoBehaviour
     private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
     {
         if (graphData.BluetoothID == e.Advertiser.BluetoothID) {
-           AddEntry(e.Advertiser.Address.ToString(), new BPMEntry(e.Advertisement.HeartRate, e.Advertisement.Confidence));
+           AddEntry(e.Advertiser.Address.ToString(), new DataEntry(e.Advertisement.HeartRate, e.Advertisement.Confidence));
         }
 
     }
@@ -86,13 +86,13 @@ public class WindowGraph : MonoBehaviour
         {
             case "1":
             
-                return new GraphData(ID,"HeartRate","BPM",240,0);
+                return new GraphData(ID,"HeartRate","Data",240,0);
             case "2":
                 return new GraphData(ID,"Accler", "Acc", 240, 0);
             case "3":
                 return new GraphData(ID,"Sleeptime", "Sleep", 240, 0);
             case "4":
-                return new GraphData(ID,"Speed", "BPM", 240, 0);
+                return new GraphData(ID,"Speed", "Data", 240, 0);
             default:
                 Debug.Log("Unknown Blueooth ID.");
                 return new GraphData(ID,"Unknown", "", 300, 0);
@@ -114,21 +114,21 @@ public class WindowGraph : MonoBehaviour
     }
 
     /// <summary>
-    /// Renders a list of BPM data pertaining to a single patient.
+    /// Renders a list of Data data pertaining to a single patient.
     /// </summary>
-    /// <param name="patientBPMData">List of BPM data</param>
+    /// <param name="patientDataData">List of Data data</param>
     /// <param name="colour">The colour of the line to be drawn</param>
-    private void RenderLine(int lineIndex, List<CheckedBPMEntry> patientBPMData, Color32 colour)
+    private void RenderLine(int lineIndex, List<CheckedDataEntry> patientDataData, Color32 colour)
     {
         GameObject lastCircleGameObject = null;
-        for (int i = 0; i < patientBPMData.Count; i++)
+        for (int i = 0; i < patientDataData.Count; i++)
         {
-            float confidence = patientBPMData[i].Confidence;
-            float xPosition = (patientBPMData.Count - i) * xSize;
-            float yPosition = patientBPMData[i].BPM + yMinimum;
+            float confidence = patientDataData[i].Confidence;
+            float xPosition = (patientDataData.Count - i) * xSize;
+            float yPosition = patientDataData[i].Data + yMinimum;
 
             GameObject circleGameObject =
-                CreateCircle(new Vector2(xPosition, yPosition), colour, patientBPMData[i].IsAssumed);
+                CreateCircle(new Vector2(xPosition, yPosition), colour, patientDataData[i].IsAssumed);
 
             chartObjectList.Add(circleGameObject);
 
@@ -152,14 +152,14 @@ public class WindowGraph : MonoBehaviour
         float xPositionText = 200f + lineIndex * 80;
         float yPositionText = 20f;
 
-        float average = patientBPMData.ConvertAll((entry) => entry.BPM).Aggregate((a, b) => a + b) / patientBPMData.Count;
+        float average = patientDataData.ConvertAll((entry) => entry.Data).Aggregate((a, b) => a + b) / patientDataData.Count;
 
         GameObject RollingHeartText = CreateHeartRateText(new Vector2(xPositionText, yPositionText), colour, average);
         chartObjectList.Add(RollingHeartText);
     }
 
     /// <summary>
-    /// Creates a circle represent a BPM reading on a chart line.
+    /// Creates a circle represent a Data reading on a chart line.
     /// </summary>
     /// <param name="anchoredPosition"></param>
     /// <param name="colour"></param>
@@ -233,16 +233,16 @@ public class WindowGraph : MonoBehaviour
     }
 
     /// <summary>
-    /// Creates the BPM summary for each line on the bottom of the chart
+    /// Creates the Data summary for each line on the bottom of the chart
     /// </summary>
     /// <param name="anchoredPosition"></param>
     /// <param name="colour"></param>
-    /// <param name="BPM"></param>
+    /// <param name="Data"></param>
     /// <returns></returns>
     /// 
 
     
-    private GameObject CreateHeartRateText(Vector2 anchoredPosition, Color32 colour, float BPM)
+    private GameObject CreateHeartRateText(Vector2 anchoredPosition, Color32 colour, float Data)
     {
 
         GameObject heartRateTextGameObject = new("HeartRateText", typeof(Text));
@@ -262,7 +262,7 @@ public class WindowGraph : MonoBehaviour
         text.font = heartRateTextFont;
         text.fontSize = 30;
         text.color = colour;
-        heartRateTextGameObject.GetComponent<UnityEngine.UI.Text>().text = BPM.ToString();
+        heartRateTextGameObject.GetComponent<UnityEngine.UI.Text>().text = Data.ToString();
 
 
 
@@ -311,7 +311,7 @@ public class WindowGraph : MonoBehaviour
         {
             if (Latest.ContainsKey(lineId))
             {
-                AppendLineEntry(lineId, new CheckedBPMEntry(Latest[lineId], false));
+                AppendLineEntry(lineId, new CheckedDataEntry(Latest[lineId], false));
             }
             else
             {
@@ -344,7 +344,7 @@ public class WindowGraph : MonoBehaviour
         //Attemtps to add a value to the hashmap using the ID., Skips this step if it already exists.
         if (Lines.ContainsKey(id))
         {
-            Lines.TryGetValue(id, out Queue<CheckedBPMEntry> entries);
+            Lines.TryGetValue(id, out Queue<CheckedDataEntry> entries);
 
             entries.Enqueue(entries.Last());
             entries.Dequeue();
@@ -352,7 +352,7 @@ public class WindowGraph : MonoBehaviour
         else
         {
             // Generates a list of (0,0) vectors to pad the new list.
-            var queue = new Queue<CheckedBPMEntry>(Enumerable.Range(0, DotCount - 1).Select(x => new CheckedBPMEntry(0, 0, true)));
+            var queue = new Queue<CheckedDataEntry>(Enumerable.Range(0, DotCount - 1).Select(x => new CheckedDataEntry(0, 0, true)));
 
             Lines.Add(id, queue);
         }
@@ -365,7 +365,7 @@ public class WindowGraph : MonoBehaviour
     /// <param name="id"></param>
     /// <param name="entry"></param>
     /// 
-    public void AddEntry(string id, BPMEntry entry)
+    public void AddEntry(string id, DataEntry entry)
     {
         if (Latest.ContainsKey(id))
         {
@@ -386,12 +386,12 @@ public class WindowGraph : MonoBehaviour
     /// </summary>
     /// <param name="id"></param>
     /// <param name="entry"></param>
-    public void AppendLineEntry(string id, CheckedBPMEntry entry)
+    public void AppendLineEntry(string id, CheckedDataEntry entry)
     {
         //Attemtps to add a value to the hashmap using the ID., Skips this step if it already exists.
         if (Lines.ContainsKey(id))
         {
-            Lines.TryGetValue(id, out Queue<CheckedBPMEntry> entries);
+            Lines.TryGetValue(id, out Queue<CheckedDataEntry> entries);
 
             entries.Enqueue(entry);
             entries.Dequeue();
@@ -399,7 +399,7 @@ public class WindowGraph : MonoBehaviour
         else
         {
             // Generates a list of (0,0) vectors to pad the new queue.
-            var queue = new Queue<CheckedBPMEntry>(Enumerable.Range(0, DotCount - 1).Select(x => new CheckedBPMEntry(0, 0, true)));
+            var queue = new Queue<CheckedDataEntry>(Enumerable.Range(0, DotCount - 1).Select(x => new CheckedDataEntry(0, 0, true)));
 
             Lines.Add(id, queue);
         }
@@ -412,29 +412,29 @@ public class WindowGraph : MonoBehaviour
     }
 }
 
-public class BPMEntry
+public class DataEntry
 {
-    public int BPM { get; set; }
+    public int Data { get; set; }
     public int Confidence { get; set; }
 
-    public BPMEntry(int bpm, int confidence)
+    public DataEntry(int data, int confidence)
     {
-        BPM = bpm;
+        Data = data;
         Confidence = confidence;
     }
 }
 
 
-public class CheckedBPMEntry : BPMEntry
+public class CheckedDataEntry : DataEntry
 {
     public bool IsAssumed { get; private set; }
 
-    public CheckedBPMEntry(int bpm, int confidence, bool isAssumed) : base(bpm, confidence)
+    public CheckedDataEntry(int data, int confidence, bool isAssumed) : base(data, confidence)
     {
         IsAssumed = isAssumed;
     }
 
-    public CheckedBPMEntry(BPMEntry entry, bool isAssumed) : base(entry.BPM, entry.Confidence)
+    public CheckedDataEntry(DataEntry entry, bool isAssumed) : base(entry.Data, entry.Confidence)
     {
         IsAssumed = isAssumed;
     }
