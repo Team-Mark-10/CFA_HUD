@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -6,6 +5,7 @@ using UnityEngine;
 using TMPro;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Net.Http.Headers;
 
 #if ENABLE_WINMD_SUPPORT
 using Windows.Devices.Bluetooth;
@@ -42,9 +42,12 @@ namespace CFA_HUD
     public class BluetoothLEHRMParser : MonoBehaviour
     {
 
-        const string API_URL = "http://localhost:8080";
+        const string API_URL = "http://20.211.90.206:8080";
 
         public TMP_Text debugText;
+
+        [SerializeField]
+        private float syncPeriod = 10f;
 
 #if ENABLE_WINMD_SUPPORT
          private BluetoothLEAdvertisementWatcher bleWatcher;
@@ -53,9 +56,13 @@ namespace CFA_HUD
         public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
 
         private readonly List<CFAAdvertisementDetails> Advertisements = new();
+        private readonly List<CFAAdvertisementDetails> UploadCache = new();
+
         private readonly List<Patient> Patients = new();
 
-        private readonly HttpClient apiClient = new();
+        private readonly HttpClient apiClient = new() { BaseAddress = new Uri(API_URL), Timeout = TimeSpan.FromSeconds(10) };
+
+        private bool dbConnectionActive = false;
 
         protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
         {
@@ -66,6 +73,8 @@ namespace CFA_HUD
         // Start is called before the first frame update
         void Start()
         {
+            apiClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CFA_HUD", "0.1"));
+
 
 #if ENABLE_WINMD_SUPPORT
             bleWatcher = new BluetoothLEAdvertisementWatcher();
@@ -85,39 +94,60 @@ namespace CFA_HUD
 
 #endif
             TestDBConnection();
+
+            InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
         }
 
         /**
          * Calls the API and sees if it is active. 
          **/
-        async Task<bool> TestDBConnection()
+        async Task TestDBConnection()
         {
             Debug.Log("Testing API...");
 
-            var response = await apiClient.GetAsync($"{API_URL}/status");
+            var response = await apiClient.GetAsync($"status");
 
             Debug.Log($"API reports {response.StatusCode}");
 
-            return response.StatusCode == System.Net.HttpStatusCode.OK;
+            dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
         }
 
-        //        async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements) 
-        //        {
-        //#if ENABLE_WINMD_SUPPORT
-
-        //#endif
-        //        }
-
-        // Update is called once per frame
-        void Update()
+        async Task<bool> SyncWithDB()
         {
 
-#if ENABLE_WINMD_SUPPORT
-        if(Advertisements.Count > 0) {
+            if (dbConnectionActive && UploadCache.Count > 0)
+            {
+                var cacheShallowCopy = new List<CFAAdvertisementDetails>(UploadCache);
+                UploadCache.Clear();
 
-        } 
-#endif
+                if (await PostReadings(cacheShallowCopy))
+                {
+                    return true;
 
+                }
+                else
+                {
+                    Debug.Log("Couldn't post upload cache.");
+                    UploadCache.AddRange(cacheShallowCopy);
+                    return false;
+                }
+            }
+            else
+            {
+                await TestDBConnection();
+                return false;
+            }
+
+        }
+
+        async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements)
+        {
+            var jsonObject = $"{{ \"readings\": [{string.Join(",", advertisements.Select(x => x.ToJSONFormat()))}] }}";
+
+            var stringContent = new StringContent(jsonObject, System.Text.Encoding.UTF8, "application/json");
+            var response = await apiClient.PostAsync("readings", stringContent);
+
+            return response.StatusCode == System.Net.HttpStatusCode.OK;
         }
 
         /***
@@ -177,6 +207,7 @@ namespace CFA_HUD
             
             CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
             Advertisements.Add(details);
+            UploadCache.Add(details);
 
             OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
         }

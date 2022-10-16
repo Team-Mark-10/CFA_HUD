@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 #if ENABLE_WINMD_SUPPORT
 using Windows.Devices.Bluetooth;
@@ -67,6 +69,8 @@ namespace CFA_HUD
         public List<ContinuousData> ContinuousData { get; private set; }
         public Patient Patient { get; private set; }
 
+        public DateTime TimeOfReading { get; }
+
 #if ENABLE_WINMD_SUPPORT
 
         public CFAAdvertisementDetails(BluetoothLEAdvertisementReceivedEventArgs args, Patient patient) : base(args)
@@ -97,12 +101,20 @@ namespace CFA_HUD
             }
 
             Patient = patient;
+
+            TimeOfReading = DateTime.Now;
+
         }
 
 #endif
         public ContinuousData GetContinuousDataFromService(string serviceId)
         {
             return ContinuousData.Find((data) => data.ServiceId == serviceId);
+        }
+
+        public string ToJSONFormat()
+        {
+            return $"{{ \"patient\": {Patient.ToJSONFormat()}, \"data\": [{String.Join(",", ContinuousData.Select(x => x.ToJSONFormat()))}] , \"reading_at\": \"{XmlConvert.ToString(TimeOfReading, XmlDateTimeSerializationMode.Utc)}\" }}";
         }
     }
 
@@ -112,12 +124,20 @@ namespace CFA_HUD
         public float Value { get; private set; }
         public int Confidence { get; private set; }
         public string ServiceId { get; private set; }
+        public string Alias { get; private set; }
 
-        public ContinuousData(string serviceId, float value, int confidence = 1)
+
+        public ContinuousData(string serviceId, float value, int confidence = 1, string alias = null)
         {
             ServiceId = serviceId;
             Value = value;
             Confidence = confidence;
+            Alias = alias;
+        }
+
+        public string ToJSONFormat()
+        {
+            return $"{{\"service_id\": \"{ServiceId}\", {(Alias != null ? $"\"alias\": \"{Alias}\"," : "")} \"value\" : {Value}, \"confidence\": {Confidence} }}";
         }
     }
 
@@ -130,6 +150,11 @@ namespace CFA_HUD
         {
             Alias = alias;
             Advertiser = advertiser;
+        }
+
+        public string ToJSONFormat()
+        {
+            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : {{}} }}";
         }
 
     }
