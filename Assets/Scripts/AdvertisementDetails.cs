@@ -87,7 +87,7 @@ namespace CFA_HUD
                 
                 string serviceId = BitConverter.ToString(data[0..2]);
 
-                int confidence = data[7];
+                int confidence = data[6];
 
                 byte[] value_bytes = data[2..6];             
 

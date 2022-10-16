@@ -9,7 +9,8 @@ namespace CFA_HUD
     public class WindowGraph : MonoBehaviour
     {
         public List<string> FilterIds { get; } = new();
-        public string ServiceId { get => serviceId; private set => serviceId = value; }
+        public string ServiceId { get => serviceId; private set => serviceId = value; } 
+
         [SerializeField]
         private string serviceId;
 
@@ -66,7 +67,7 @@ namespace CFA_HUD
             var data = e.Advertisement.GetContinuousDataFromService(serviceId);
             if(data != null)
             {
-                AddEntry(e.Advertisement.Patient.Alias, data);
+                AddEntry(e.Advertisement.Patient.Advertiser.Address.ToString(), data);
             }
 
             
@@ -221,14 +222,14 @@ namespace CFA_HUD
 
 
             rectTransform.anchoredPosition = anchoredPosition;
-            rectTransform.sizeDelta = new(40, 40);
+            rectTransform.sizeDelta = new(80, 40);
             rectTransform.anchorMin = new(0, 0);
             rectTransform.anchorMax = new(0, 0);
 
             Text text = heartRateTextGameObject.GetComponent<Text>();
 
             text.font = heartRateTextFont;
-            text.fontSize = 30;
+            text.fontSize = 24;
             text.color = colour;
 
             heartRateTextGameObject.GetComponent<UnityEngine.UI.Text>().text = value.ToString();
