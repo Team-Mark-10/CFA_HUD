@@ -26,6 +26,11 @@ public class WindowGraph : MonoBehaviour
     private GameObject parserGO;
 
     [SerializeField]
+    private GameObject _title;
+
+  
+
+    [SerializeField]
     private GameObject selectorGO;
 
     private RectTransform graphContainer;
@@ -80,13 +85,12 @@ public class WindowGraph : MonoBehaviour
         switch (ID)
         {
             case "1":
+            
                 return new GraphData(ID,"HeartRate","BPM",240,0);
             case "2":
-
-                return new GraphData(ID,"Accler", "BPM", 240, 0);
+                return new GraphData(ID,"Accler", "Acc", 240, 0);
             case "3":
-
-                return new GraphData(ID,"Sleeptime", "BPM", 240, 0);
+                return new GraphData(ID,"Sleeptime", "Sleep", 240, 0);
             case "4":
                 return new GraphData(ID,"Speed", "BPM", 240, 0);
             default:
@@ -235,6 +239,9 @@ public class WindowGraph : MonoBehaviour
     /// <param name="colour"></param>
     /// <param name="BPM"></param>
     /// <returns></returns>
+    /// 
+
+    
     private GameObject CreateHeartRateText(Vector2 anchoredPosition, Color32 colour, float BPM)
     {
 
@@ -242,21 +249,48 @@ public class WindowGraph : MonoBehaviour
         heartRateTextGameObject.transform.SetParent(graphContainer, false);
         RectTransform rectTransform = heartRateTextGameObject.GetComponent<RectTransform>();
 
+   
 
         rectTransform.anchoredPosition = anchoredPosition;
         rectTransform.sizeDelta = new(40, 40);
         rectTransform.anchorMin = new(0, 0);
         rectTransform.anchorMax = new(0, 0);
-
         Text text = heartRateTextGameObject.GetComponent<Text>();
+
+
 
         text.font = heartRateTextFont;
         text.fontSize = 30;
         text.color = colour;
-
         heartRateTextGameObject.GetComponent<UnityEngine.UI.Text>().text = BPM.ToString();
 
+
+
         return heartRateTextGameObject;
+    }
+    private GameObject CreateMenuText(string name)
+    {
+
+
+
+        GameObject menuTextObject = new("MenuText", typeof(Text));
+        menuTextObject.transform.SetParent(graphContainer, false);
+        RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = new(250,150);
+        rectTransform.sizeDelta = new(150, 400);
+        rectTransform.anchorMin = new(0, 0);
+        rectTransform.anchorMax = new(0, 0);
+
+
+
+        Text text = menuTextObject.GetComponent<Text>();
+        text.font = heartRateTextFont;
+        text.fontSize = 40;
+        menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
+
+
+
+        return menuTextObject;
     }
 
     /// <summary>
@@ -272,6 +306,7 @@ public class WindowGraph : MonoBehaviour
 
         var ids = Lines.Keys.Union(Latest.Keys);
 
+
         foreach (var lineId in ids)
         {
             if (Latest.ContainsKey(lineId))
@@ -286,6 +321,10 @@ public class WindowGraph : MonoBehaviour
 
         Latest.Clear();
 
+
+        //
+        GameObject MenuText = CreateMenuText("Graph");
+        chartObjectList.Add(MenuText);
         int index = 0;
         foreach (string key in Lines.Keys)
         {
@@ -339,6 +378,7 @@ public class WindowGraph : MonoBehaviour
         }
     }
 
+ 
 
 
     /// <summary>
