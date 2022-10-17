@@ -5,146 +5,137 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-public class Patient
+
+namespace CFA_HUD
 {
-    public string Name { get; private set; }
-    public BLEAdvertiser Advertiser { get; private set; }
-
-    public Patient(string name, BLEAdvertiser advertiser)
+    public class PatientSelectionUpdatedEventArgs : EventArgs
     {
-        Name = name;
-        Advertiser = advertiser;
-    }
-}
+        public Dictionary<string, bool> PatientActivation { get; private set; }
 
-public class PatientSelectionUpdatedEventArgs : EventArgs
-{
-    public Dictionary<string, bool> PatientActivation { get; private set; }
-
-    public PatientSelectionUpdatedEventArgs(Dictionary<string, bool> patientActivation)
-    {
-        PatientActivation = patientActivation;
-    }
-}
-public class PatientSelectionManager : MonoBehaviour
-{
-    public GameObject togglePrefab;
-    public GridObjectCollection toggleParent;
-    public TMP_Text debugText;
-
-
-    private List<PatientSelectorToggle> toggles;
-    private BluetoothLEHRMParser parser;
-
-    private readonly List<Patient> creationQueue = new();
-    private bool isOutputDirty = false;
-
-    public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;
-
-    protected virtual void OnPatientSelectionUpdated()
-    {
-        Dictionary<string, bool> activation = new();
-
-        foreach(var toggle in toggles)
+        public PatientSelectionUpdatedEventArgs(Dictionary<string, bool> patientActivation)
         {
-            activation.Add(toggle.Patient.Advertiser.Address.ToString(), toggle.IsToggled);
+            PatientActivation = patientActivation;
+        }
+    }
+    public class PatientSelectionManager : MonoBehaviour
+    {
+        public GameObject togglePrefab;
+        public GridObjectCollection toggleParent;
+        public TMP_Text debugText;
+
+
+        private List<PatientSelectorToggle> toggles;
+        private BluetoothLEHRMParser parser;
+
+        private readonly List<Patient> creationQueue = new();
+        private bool isOutputDirty = false;
+
+        public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;
+
+        protected virtual void OnPatientSelectionUpdated()
+        {
+            Dictionary<string, bool> activation = new();
+
+            foreach (var toggle in toggles)
+            {
+                activation.Add(toggle.Patient.Advertiser.Address.ToString(), toggle.IsToggled);
+            }
+
+            Debug.Log(activation.ToString());
+
+            PatientSelectionUpdated.Invoke(this, new PatientSelectionUpdatedEventArgs(activation));
+
+            isOutputDirty = true;
         }
 
-        Debug.Log(activation.ToString());
-
-        PatientSelectionUpdated.Invoke(this, new PatientSelectionUpdatedEventArgs(activation));
-
-        isOutputDirty = true;
-    }
-
-    void Start()
-    {
-        toggles = new();
-
-        parser = GetComponentInParent<BluetoothLEHRMParser>();
-        parser.AdvertiserAdded += OnAdvertiserAdded;
-
-        var advertisers = parser.GetAdvertisers();
-
-        foreach(var a in advertisers)
+        void Start()
         {
-            InstantiateToggle(new Patient(a.LocalName, a));
-        }
+            toggles = new();
 
-        Debug.Log("Manager Start Finished");
-    }
+            parser = GetComponentInParent<BluetoothLEHRMParser>();
+            parser.AdvertiserAdded += OnAdvertiserAdded;
 
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (creationQueue.Count > 0)
-        {
-            foreach (var patient in creationQueue)
+            foreach (var patient in parser.GetPatients())
             {
                 InstantiateToggle(patient);
             }
 
-            creationQueue.Clear();
-            UpdateText();
+            Debug.Log("Manager Start Finished");
         }
-         
-        if (isOutputDirty)
+
+
+        // Update is called once per frame
+        void Update()
         {
-            UpdateText();
-            isOutputDirty = false;
+            if (creationQueue.Count > 0)
+            {
+                foreach (var patient in creationQueue)
+                {
+                    InstantiateToggle(patient);
+                }
+
+                creationQueue.Clear();
+                UpdateText();
+            }
+
+            if (isOutputDirty)
+            {
+                UpdateText();
+                isOutputDirty = false;
+            }
         }
-    }
 
-    void OnButtonToggle()
-    {
-        Debug.Log("Button Toggled");
-        OnPatientSelectionUpdated();
-        isOutputDirty = true;
-    }
-
-    private void UpdateText()
-    {
-        string newText = "State: ";
-
-        foreach(var t in toggles)
+        void OnButtonToggle()
         {
-            newText += $"{t.Patient.Name} => {t.IsToggled}, ";
+            Debug.Log("Button Toggled");
+            OnPatientSelectionUpdated();
+            isOutputDirty = true;
         }
 
-        debugText.text = newText;
-    }
+        private void UpdateText()
+        {
+            string newText = "State: ";
 
-    private void InstantiateToggle(Patient patient)
-    {
-        StartCoroutine(InstantiateToggleCoroutine(patient));
+            foreach (var t in toggles)
+            {
+                newText += $"{t.Patient.Alias} => {t.IsToggled}, ";
+            }
 
-    }
+            debugText.text = newText;
+        }
 
-    private IEnumerator InstantiateToggleCoroutine(Patient patient)
-    {
-        var toggleGameObject = Instantiate(togglePrefab, toggleParent.transform);
-        
-        PatientSelectorToggle toggleComponent = toggleGameObject.GetComponent<PatientSelectorToggle>();
+        private void InstantiateToggle(Patient patient)
+        {
+            StartCoroutine(InstantiateToggleCoroutine(patient));
 
-        toggleComponent.Patient = patient;
+        }
 
-        toggleComponent.AddToggleSelectedListener(OnButtonToggle);
-        toggleComponent.AddToggleDeselectedListener(OnButtonToggle);
+        private IEnumerator InstantiateToggleCoroutine(Patient patient)
+        {
+            var toggleGameObject = Instantiate(togglePrefab, toggleParent.transform);
 
-        toggles.Add(toggleComponent);
-        yield return new WaitForEndOfFrame();
-        toggleParent.UpdateCollection();
-        yield return new WaitForEndOfFrame();
-        GetComponentInChildren<ScrollingObjectCollection>().UpdateContent();
+            PatientSelectorToggle toggleComponent = toggleGameObject.GetComponent<PatientSelectorToggle>();
 
-        Debug.Log("Toggle instantiated");
-    }
+            toggleComponent.Patient = patient;
 
-    void OnAdvertiserAdded(object sender, AdvertiserAddedEventArgs args)
-    {
-        Debug.Log("OnAdvertiserAdded");
-        creationQueue.Add(new Patient(args.Advertiser.LocalName, args.Advertiser));
+            toggleComponent.AddToggleSelectedListener(OnButtonToggle);
+            toggleComponent.AddToggleDeselectedListener(OnButtonToggle);
+
+            toggles.Add(toggleComponent);
+            yield return new WaitForEndOfFrame();
+            toggleParent.UpdateCollection();
+            yield return new WaitForEndOfFrame();
+            GetComponentInChildren<ScrollingObjectCollection>().UpdateContent();
+
+            Debug.Log("Toggle instantiated");
+        }
+
+        void OnAdvertiserAdded(object sender, PatientAddedEventArgs args)
+        {
+            Debug.Log("OnAdvertiserAdded");
+            creationQueue.Add(args.Patient);
+        }
+
     }
 
 }

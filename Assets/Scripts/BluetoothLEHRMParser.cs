@@ -1,9 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEngine;
 using TMPro;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Net.Http.Headers;
 
 #if ENABLE_WINMD_SUPPORT
 using Windows.Devices.Bluetooth;
@@ -16,138 +18,64 @@ using Windows.Foundation.Collections;
 using Windows.Security.Cryptography;
 #endif
 
-#if ENABLE_WINMD_SUPPORT
-public class AdvertisementDetails
+namespace CFA_HUD
 {
-    public ulong Address { get; private set; }
-    public List<Guid> Services { get; private set; }
-    public String LocalName { get; private set; }
-    public DateTimeOffset TimeStamp { get; private set; }
-    public BluetoothLEAdvertisementType Type { get; private set; }
-    public short RSSI { get; private set; }
-    public string ManufacturerData { get; private set; }
-
-    public AdvertisementDetails(BluetoothLEAdvertisementReceivedEventArgs args)
+    public class PatientAddedEventArgs : EventArgs
     {
-        Address = args.BluetoothAddress;
-        Services = args.Advertisement.ServiceUuids.ToList();
-        LocalName = args.Advertisement.LocalName;
-        TimeStamp = args.Timestamp;
-        Type = args.AdvertisementType;
-        RSSI = args.RawSignalStrengthInDBm;
+        public Patient Patient { get; }
 
-        BluetoothLEManufacturerData manufacturerData = args.Advertisement.ManufacturerData[0];
-
-        byte[] data = new byte[manufacturerData.Data.Length];
-        using (var reader = DataReader.FromBuffer(manufacturerData.Data))
+        public PatientAddedEventArgs(Patient patient)
         {
-            reader.ReadBytes(data);
-        }
-
-        ManufacturerData = string.Format("0x{0}: {1}",
-                args.Advertisement.ManufacturerData[0].CompanyId.ToString("X"),
-                BitConverter.ToString(data));
-
-        List<string> dsStrings = new List<string>();
-
-        foreach (BluetoothLEAdvertisementDataSection ds in args.Advertisement.DataSections)
-        {
-            var output = CryptographicBuffer.EncodeToHexString(ds.Data);
-
-            dsStrings.Add(output);
+            Patient = patient;
         }
     }
-}
-
-public class CFAAdvertisementDetails : AdvertisementDetails
-{
-
-    public int HeartRate { get; private set; }
-    public int Confidence { get; private set; }
-
-    public CFAAdvertisementDetails(BluetoothLEAdvertisementReceivedEventArgs args) : base(args)
+    public class AdvertisementReceivedEventArgs : EventArgs
     {
-        IBuffer buffer = args.Advertisement.DataSections[2].Data;
-        byte[] data = new byte[buffer.Length];
-        DataReader.FromBuffer(buffer).ReadBytes(data);
+        public CFAAdvertisementDetails Advertisement { get; }
 
-        HeartRate = data[2];
-        Confidence = data[3];
+        public AdvertisementReceivedEventArgs(CFAAdvertisementDetails advertisement)
+        {
+            Advertisement = advertisement;
+        }
     }
-}
 
-
-#endif
-
-public class BLEAdvertiser
-{
-    public ulong Address { get; private set; }
-    public String LocalName { get; private set; }
-
-    public BLEAdvertiser(ulong address, String localName)
+    public class BluetoothLEHRMParser : MonoBehaviour
     {
-        Address = address;
-        LocalName = localName;
-    }
-}
 
-public class AdvertiserAddedEventArgs : EventArgs
-{
-    public BLEAdvertiser Advertiser { get { return advertiser;  } }
-    private BLEAdvertiser advertiser;
+        const string API_URL = "http://20.211.90.206:8080";
 
-    public AdvertiserAddedEventArgs(BLEAdvertiser advertiser)
-    {
-        this.advertiser = advertiser;
-    }
-}
+        public TMP_Text debugText;
+
+        [SerializeField]
+        private float syncPeriod = 10f;
 
 #if ENABLE_WINMD_SUPPORT
-public class AdvertisementReceivedEventArgs : EventArgs
-{
-    public CFAAdvertisementDetails Advertisement { get { return advertisement; } }
-    private CFAAdvertisementDetails advertisement;
-
-    public BLEAdvertiser Advertiser { get { return advertiser;  } }
-    private BLEAdvertiser advertiser;
-
-    public AdvertisementReceivedEventArgs(CFAAdvertisementDetails advertisement, BLEAdvertiser advertiser)
-    {
-        this.advertisement = advertisement;
-        this.advertiser = advertiser;
-    }
-}
-
-
+         private BluetoothLEAdvertisementWatcher bleWatcher;
 #endif
+        public event EventHandler<PatientAddedEventArgs> AdvertiserAdded;
+        public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
 
-public class BluetoothLEHRMParser : MonoBehaviour
-{
-    public TMP_Text heartRateText;
+        private readonly List<CFAAdvertisementDetails> Advertisements = new();
+        private readonly List<CFAAdvertisementDetails> UploadCache = new();
 
-#if ENABLE_WINMD_SUPPORT
-     private BluetoothLEAdvertisementWatcher bleWatcher;
-    
-     private List<CFAAdvertisementDetails> Advertisements = new List<CFAAdvertisementDetails>();
-     private List<CFAAdvertisementDetails> AdvertiserSpecificAdvertisements = new List<CFAAdvertisementDetails>();
-#endif
-    private List<BLEAdvertiser> Advertisers = new List<BLEAdvertiser>();
+        private readonly List<Patient> Patients = new();
 
-    public event EventHandler<AdvertiserAddedEventArgs> AdvertiserAdded;
+        private readonly HttpClient apiClient = new() { BaseAddress = new Uri(API_URL), Timeout = TimeSpan.FromSeconds(10) };
 
-#if ENABLE_WINMD_SUPPORT
-    public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
+        private bool dbConnectionActive = false;
 
-    protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e) {
-        var handler = AdvertisementReceived;
-        handler?.Invoke(this,e);
-    }
-#endif
+        protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
+        {
+            var handler = AdvertisementReceived;
+            handler?.Invoke(this, e);
+        }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+        // Start is called before the first frame update
+        void Start()
+        {
+            apiClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CFA_HUD", "0.1"));
+
+
 #if ENABLE_WINMD_SUPPORT
             bleWatcher = new BluetoothLEAdvertisementWatcher();
 
@@ -163,77 +91,131 @@ public class BluetoothLEHRMParser : MonoBehaviour
             bleWatcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
 
             StartBleDeviceWatcher();
+
 #endif
-    }
+            TestDBConnection();
 
-    // Update is called once per frame
-    void Update()
-    {
+            InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
+        }
 
-#if ENABLE_WINMD_SUPPORT
-        if(Advertisements.Count > 0) {
-            heartRateText.text = "Total Count: " + Advertisements.Count + ", Latest: " + Advertisements[Advertisements.Count - 1].HeartRate.ToString();
-        } 
-#endif
-
-    }
-
-    void AddAdvertiser(BLEAdvertiser advertiser)
-    {
-        Debug.Log("Adding advertiser at parser");
-        Advertisers.Add(advertiser);
-        AdvertiserAdded.Invoke(this, new AdvertiserAddedEventArgs(advertiser));
-    }
-
-#if ENABLE_WINMD_SUPPORT
-    private BLEAdvertiser FindAdvertiser(ulong address)
-    {
-        for (int i = 0; i < this.Advertisers.Count; i++)
+        /**
+         * Calls the API and sees if it is active. 
+         **/
+        async Task TestDBConnection()
         {
-            if (this.Advertisers[i].Address == address)
+            Debug.Log("Testing API...");
+
+            var response = await apiClient.GetAsync($"status");
+
+            Debug.Log($"API reports {response.StatusCode}");
+
+            dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
+        }
+
+        async Task<bool> SyncWithDB()
+        {
+
+            if (dbConnectionActive && UploadCache.Count > 0)
             {
-                return this.Advertisers[i];
+                var cacheShallowCopy = new List<CFAAdvertisementDetails>(UploadCache);
+                UploadCache.Clear();
+
+                if (await PostReadings(cacheShallowCopy))
+                {
+                    return true;
+
+                }
+                else
+                {
+                    Debug.Log("Couldn't post upload cache.");
+                    UploadCache.AddRange(cacheShallowCopy);
+                    return false;
+                }
             }
+            else
+            {
+                await TestDBConnection();
+                return false;
+            }
+
         }
-        return null;
-    }
-    private void StartBleDeviceWatcher()
-    {
+
+        async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements)
+        {
+            var jsonObject = $"{{ \"readings\": [{string.Join(",", advertisements.Select(x => x.ToJSONFormat()))}] }}";
+
+            var stringContent = new StringContent(jsonObject, System.Text.Encoding.UTF8, "application/json");
+            var response = await apiClient.PostAsync("readings", stringContent);
+
+            return response.StatusCode == System.Net.HttpStatusCode.OK;
+        }
+
+        /***
+         * Generates and tracks a patient from a given bluetooth advertiser.
+         */
+        private Patient AddAdvertiserAsPatient(BLEAdvertiser advertiser, string alias)
+        {
+            if (alias == null)
+            {
+                alias = $"Patient {Patients.Count + 1}";
+            }
+
+            Patient newPatient = new(alias, advertiser);
+            Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
+
+            Patients.Add(newPatient);
+            AdvertiserAdded.Invoke(this, new PatientAddedEventArgs(newPatient));
+
+            return newPatient;
+        }
+
+        /***
+         * Finds a patient from the tracked patients list with the given bluetooth address.
+         */
+        private Patient FindPatient(ulong address)
+        {
+            for (int i = 0; i < Patients.Count; i++)
+            {
+                if (Patients[i].Advertiser.Address == address)
+                {
+                    return Patients[i];
+                }
+            }
+            return null;
+        }
+
+#if ENABLE_WINMD_SUPPORT
+      
+        private void StartBleDeviceWatcher()
+        {
         
-        bleWatcher.Received += OnAdvertisementRecieved;
+            bleWatcher.Received += OnAdvertisementRecieved;
 
-        bleWatcher.Start();
-        heartRateText.text = "Starting Heart Rate Listener";
-    }
-
-    private void OnAdvertisementRecieved(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs args)
-    {
-        BLEAdvertiser advertiser = FindAdvertiser(args.BluetoothAddress);
-        CFAAdvertisementDetails details = new CFAAdvertisementDetails(args);
-
-        Advertisements.Add(details);
-
-        if (advertiser == null)
-        {
-            var newAdvertiser = new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName);
-            AddAdvertiser(newAdvertiser);
-            OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details, newAdvertiser));
-
+            bleWatcher.Start();
+            debugText.text = "Starting Heart Rate Listener";
         }
-        else
+
+        private void OnAdvertisementRecieved(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs args)
         {
-            AdvertiserSpecificAdvertisements.Add(details);
-            OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details, advertiser));
+            Patient patient = FindPatient(args.BluetoothAddress);
 
-            // UpdateRecentHistory();
+            if (patient == null)
+            {
+                var advertiser = new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName);
+                 patient = AddAdvertiserAsPatient(advertiser, null);
+            }
+            
+            CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
+            Advertisements.Add(details);
+            UploadCache.Add(details);
+
+            OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
         }
-    }
-
-   
 
 #endif
-    public List<BLEAdvertiser> GetAdvertisers()
-    {
-        return Advertisers;
+        public List<Patient> GetPatients()
+        {
+            return Patients;
+        }
     }
 }
