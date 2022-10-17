@@ -11,10 +11,7 @@ namespace CFA_HUD
     {
         public List<string> FilterIds { get; } = new();
         public string ServiceId { get => serviceId; private set => serviceId = value; }
-        public string Title { get => title; set => title = value; }
-
-        [SerializeField]
-        private string title;
+     
 
         [SerializeField]
         private string serviceId;
@@ -66,7 +63,7 @@ namespace CFA_HUD
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
             selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
 
-            transform.Find("TitleText").GetComponent<TMP_Text>().text = title;
+          
 
 
         }
@@ -259,7 +256,7 @@ namespace CFA_HUD
             text.font = valueTextFont;
             text.fontSize = 24;
             text.color = colour;
-
+            value = (int)Math.Round(value, 0);
             valueTextGameObject.GetComponent<UnityEngine.UI.Text>().text = value.ToString();
 
             return valueTextGameObject;
@@ -341,7 +338,8 @@ namespace CFA_HUD
 
 
             //Menu text to be taken from graphdata
-            GraphData GraphData = SelectGraphType("1");
+            GraphData GraphData = SelectGraphType(serviceId);
+            Debug.Log(serviceId);
 
             GameObject MenuText = CreateMenuText(GraphData.Title);
             chartObjectList.Add(MenuText);
