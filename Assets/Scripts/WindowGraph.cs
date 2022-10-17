@@ -25,8 +25,10 @@ public class WindowGraph : MonoBehaviour
     [SerializeField]
     private GameObject parserGO;
 
-    [SerializeField]
-    private GameObject _title;
+  
+
+   
+    public Slider Slider;
 
   
 
@@ -43,6 +45,7 @@ public class WindowGraph : MonoBehaviour
     private readonly Dictionary<string, Queue<CheckedDataEntry>> Lines = new();
     private readonly Dictionary<string, DataEntry> Latest = new();
 
+    
 
     private void Awake()
     {
@@ -86,9 +89,9 @@ public class WindowGraph : MonoBehaviour
         {
             case "1":
             
-                return new GraphData(ID,"HeartRate","Data",240,0);
+                return new GraphData(ID,"Heart Rate","BPM",240,0);
             case "2":
-                return new GraphData(ID,"Accler", "Acc", 240, 0);
+                return new GraphData(ID,"Accler", "Acc", 3, 0);
             case "3":
                 return new GraphData(ID,"Sleeptime", "Sleep", 240, 0);
             case "4":
@@ -116,19 +119,19 @@ public class WindowGraph : MonoBehaviour
     /// <summary>
     /// Renders a list of Data data pertaining to a single patient.
     /// </summary>
-    /// <param name="patientDataData">List of Data data</param>
+    /// <param name="patientDataInfo">List of data info</param>
     /// <param name="colour">The colour of the line to be drawn</param>
-    private void RenderLine(int lineIndex, List<CheckedDataEntry> patientDataData, Color32 colour)
+    private void RenderLine(int lineIndex, List<CheckedDataEntry> patientDataInfo, Color32 colour)
     {
         GameObject lastCircleGameObject = null;
-        for (int i = 0; i < patientDataData.Count; i++)
+        for (int i = 0; i < patientDataInfo.Count; i++)
         {
-            float confidence = patientDataData[i].Confidence;
-            float xPosition = (patientDataData.Count - i) * xSize;
-            float yPosition = patientDataData[i].Data + yMinimum;
+            float confidence = patientDataInfo[i].Confidence;
+            float xPosition = (patientDataInfo.Count - i) * xSize;
+            float yPosition = patientDataInfo[i].Data + yMinimum;
 
             GameObject circleGameObject =
-                CreateCircle(new Vector2(xPosition, yPosition), colour, patientDataData[i].IsAssumed);
+                CreateCircle(new Vector2(xPosition, yPosition), colour, patientDataInfo[i].IsAssumed);
 
             chartObjectList.Add(circleGameObject);
 
@@ -152,7 +155,7 @@ public class WindowGraph : MonoBehaviour
         float xPositionText = 200f + lineIndex * 80;
         float yPositionText = 20f;
 
-        float average = patientDataData.ConvertAll((entry) => entry.Data).Aggregate((a, b) => a + b) / patientDataData.Count;
+        float average = patientDataInfo.ConvertAll((entry) => entry.Data).Aggregate((a, b) => a + b) / patientDataInfo.Count;
 
         GameObject RollingHeartText = CreateHeartRateText(new Vector2(xPositionText, yPositionText), colour, average);
         chartObjectList.Add(RollingHeartText);
@@ -164,6 +167,7 @@ public class WindowGraph : MonoBehaviour
     /// <param name="anchoredPosition"></param>
     /// <param name="colour"></param>
     /// <returns></returns>
+
     private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool isAssumed)
     {
         GameObject gameObject = new("circle", typeof(Image));
@@ -276,8 +280,8 @@ public class WindowGraph : MonoBehaviour
         GameObject menuTextObject = new("MenuText", typeof(Text));
         menuTextObject.transform.SetParent(graphContainer, false);
         RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = new(250,150);
-        rectTransform.sizeDelta = new(150, 400);
+        rectTransform.anchoredPosition = new(375,150);
+        rectTransform.sizeDelta = new(250, 400);
         rectTransform.anchorMin = new(0, 0);
         rectTransform.anchorMax = new(0, 0);
 
@@ -293,6 +297,39 @@ public class WindowGraph : MonoBehaviour
         return menuTextObject;
     }
 
+ private GameObject CreateYAxisLabel(string name, int pos, float number, bool decimals){
+
+
+    
+
+        GameObject YAxisLabel = new("YAxisLabel", typeof(Text));
+       YAxisLabel.transform.SetParent(graphContainer, false);
+        RectTransform rectTransform = YAxisLabel.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = new(20,pos+40);
+        rectTransform.sizeDelta = new(80, 40);
+        rectTransform.anchorMin = new(0, 0);
+        rectTransform.anchorMax = new(0, 0);
+
+
+
+        Text text = YAxisLabel.GetComponent<Text>();
+        text.font = heartRateTextFont;
+        text.fontSize = 14;
+      
+        
+        if (decimals){
+             number = (int)Math.Round(number, 0);
+        } else {
+            number =  (float)Math.Round(number, 2);
+        }
+      
+        YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " +  number);
+
+
+        return YAxisLabel;
+
+
+ }
     /// <summary>
     /// 
     /// </summary>
@@ -321,10 +358,35 @@ public class WindowGraph : MonoBehaviour
 
         Latest.Clear();
 
+  
 
-        //
-        GameObject MenuText = CreateMenuText("Graph");
+
+        //Menu text to be taken from graphdata
+        GraphData GraphData = SelectGraphType(Slider.value.ToString());
+
+
+
+        GameObject MenuText = CreateMenuText(GraphData.Title);
         chartObjectList.Add(MenuText);
+
+        //Generates Yaxis labels based off y 
+        int i;
+        float number = GraphData.Ymax/6;
+        for (i = 0; i < 7; i++){
+            
+            if (number>7){
+         GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i*40, number*i, true );
+          chartObjectList.Add(YAxisLabel);
+            } else
+            {
+        GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i*40, number*i, false );
+        chartObjectList.Add(YAxisLabel);
+            }
+          
+
+          }
+
+
         int index = 0;
         foreach (string key in Lines.Keys)
         {
@@ -446,11 +508,11 @@ public class GraphData
     public string Title { get; set; }
 
     public string AxisLabel { get; set; }
-    public int Ymax { get; set; }
+    public float Ymax { get; set; }
 
     public int Ymin { get; set; }
 
-    public GraphData(string bluetoothID, string title, string axisLabel, int ymax, int ymin)
+    public GraphData(string bluetoothID, string title, string axisLabel, float ymax, int ymin)
     {
         BluetoothID = bluetoothID;
         Title = title;
