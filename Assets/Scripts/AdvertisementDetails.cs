@@ -19,6 +19,9 @@ using Windows.Security.Cryptography;
 
 namespace CFA_HUD
 {
+
+
+
     public class AdvertisementDetails
     {
 #if ENABLE_WINMD_SUPPORT
@@ -64,7 +67,7 @@ namespace CFA_HUD
 #endif
     }
 
-    public class CFAAdvertisementDetails : AdvertisementDetails
+    public class CFAAdvertisementDetails : AdvertisementDetails, JSONSerializable
     {
         public List<ContinuousData> ContinuousData { get; private set; }
         public Patient Patient { get; private set; }
@@ -118,7 +121,7 @@ namespace CFA_HUD
         }
     }
 
-    public class ContinuousData
+    public class ContinuousData : JSONSerializable
     {
 
         public float Value { get; private set; }
@@ -141,23 +144,83 @@ namespace CFA_HUD
         }
     }
 
-    public class Patient
+    public class Patient : JSONSerializable
     {
         public string Alias { get; private set; }
         public BLEAdvertiser Advertiser { get; private set; }
+        public List<JSONSerializable> Data { get; private set; }
 
-        public Patient(string alias, BLEAdvertiser advertiser)
+        public Patient(string alias, BLEAdvertiser advertiser, List<JSONSerializable> data = null)
         {
             Alias = alias;
             Advertiser = advertiser;
+            Data = data;
         }
 
         public string ToJSONFormat()
         {
-            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : {{}} }}";
+            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : {(Data != null ? Data.ToJSONFormat() : "{}")} }}";
         }
 
     }
+
+    public interface JSONSerializable
+    {
+        public string ToJSONFormat();
+    }
+
+
+    public abstract class ArbitraryData<T> : JSONSerializable { 
+
+        public string Name { get; set; }
+        public T Value { get; set; }
+
+        private readonly ArbitraryDataSerialiser<T> serialiser;
+
+
+        public ArbitraryData(string name, T value, ArbitraryDataSerialiser<T> _serialiser) 
+        {
+            Name = name;
+            Value = value;
+            serialiser = _serialiser;
+        }
+
+        public string ToJSONFormat()
+        {
+            return serialiser(this);
+        }
+    }
+
+    public delegate string ArbitraryDataSerialiser<T>(ArbitraryData<T> obj);
+
+    public static class ArbitraryDataSerializers {
+        public static ArbitraryDataSerialiser<string> StringSerializer = delegate (ArbitraryData<string> data)
+        {
+            return $"{{ name: \"{data.Name}\", value: \"{data.Value}\" }}";
+
+        };
+
+        public static ArbitraryDataSerialiser<bool> BoolSerializer = delegate (ArbitraryData<bool> data)
+        {
+            return $"{{ name: \"{data.Name}\", value: {data.Value} }}";
+        };
+
+        public static ArbitraryDataSerialiser<float> FloatSerializer = delegate (ArbitraryData<float> data)
+        {
+            return $"{{ name: \"{data.Name}\", value: {data.Value} }}";
+        };
+
+        public static ArbitraryDataSerialiser<int> IntSerializer = delegate (ArbitraryData<int> data)
+        {
+            return $"{{ name: \"{data.Name}\", value: {data.Value} }}";
+        };
+
+        public static ArbitraryDataSerialiser<DateTime> DateTimeSerializer = delegate (ArbitraryData<DateTime> data)
+        {
+            return $"{{ name: \"{data.Name}\", value: {XmlConvert.ToString(data.Value, XmlDateTimeSerializationMode.Utc)} }}";
+        };
+    }
+
     public class BLEAdvertiser
     {
         public ulong Address { get; private set; }
