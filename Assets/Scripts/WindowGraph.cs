@@ -74,36 +74,36 @@ namespace CFA_HUD
         private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
         {
             var data = e.Advertisement.GetContinuousDataFromService(serviceId);
-            if(data != null)
+            if (data != null)
             {
                 AddEntry(e.Advertisement.Patient.Advertiser.Address.ToString(), data);
             }
 
-            
+
         }
 
-    private GraphData SelectGraphType(string ID) {
-        //Takes a ID and applies a swtich statement based of prehardcoded ids
-        //This returns a MAX and MIN Y , a scale name and a graph name
-        switch (ID)
+        private GraphData SelectGraphType(string ID) {
+            //Takes a ID and applies a swtich statement based of prehardcoded ids
+            //This returns a MAX and MIN Y , a scale name and a graph name
+            switch (ID)
+            {
+                case "0D-18":
+                    return new GraphData(ID, "Heart Rate", "BPM", 240, 0);
+                case "13-27":
+                    return new GraphData(ID, "Accelerometer", "M/s", 3, 0);
+                case "3":
+                    return new GraphData(ID, "Sleep", "Hours", 240, 0);
+                case "4":
+                    return new GraphData(ID, "Temperture", "*C", 240, 0);
+                default:
+                    Debug.Log("Unknown Blueooth ID.");
+                    return new GraphData(ID, "Unknown", "", 300, 0);
+            }
+        }
+
+        private void OnPatientSelectionUpdated(object sender, PatientSelectionUpdatedEventArgs e)
         {
-            case "0D-18":   
-                return new GraphData(ID,"Heart Rate","BPM",240,0);
-            case "13-27":
-                return new GraphData(ID,"Accelerometer", "M/s", 3, 0);
-            case "3":
-                return new GraphData(ID,"Sleep", "Hours", 240, 0);
-            case "4":
-                return new GraphData(ID,"Temperture", "*C", 240, 0);
-            default:
-                Debug.Log("Unknown Blueooth ID.");
-                return new GraphData(ID, "Unknown", "", 300, 0);
-        }
-    }
-
-    private void OnPatientSelectionUpdated(object sender, PatientSelectionUpdatedEventArgs e)
-    {
-        filterIds.Clear();
+            FilterIds.Clear();
 
             foreach (var activationState in e.PatientActivation)
             {
@@ -264,53 +264,53 @@ namespace CFA_HUD
 
             return valueTextGameObject;
         }
-    private GameObject CreateMenuText(string name)
-    {
-        GameObject menuTextObject = new("MenuText", typeof(Text));
-        menuTextObject.transform.SetParent(graphContainer, false);
-        RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = new(375,150);
-        rectTransform.sizeDelta = new(250, 400);
-        rectTransform.anchorMin = new(0, 0);
-        rectTransform.anchorMax = new(0, 0);
+        private GameObject CreateMenuText(string name)
+        {
+            GameObject menuTextObject = new("MenuText", typeof(Text));
+            menuTextObject.transform.SetParent(graphContainer, false);
+            RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new(375, 150);
+            rectTransform.sizeDelta = new(250, 400);
+            rectTransform.anchorMin = new(0, 0);
+            rectTransform.anchorMax = new(0, 0);
 
-        Text text = menuTextObject.GetComponent<Text>();
-        text.font = heartRateTextFont;
-        text.fontSize = 35;
-        menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
+            Text text = menuTextObject.GetComponent<Text>();
+            text.font = valueTextFont;
+            text.fontSize = 35;
+            menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
 
 
 
-        return menuTextObject;
-    }
-
- private GameObject CreateYAxisLabel(string name, int pos, float number, bool decimals){
-
-        GameObject YAxisLabel = new("YAxisLabel", typeof(Text));
-       YAxisLabel.transform.SetParent(graphContainer, false);
-        RectTransform rectTransform = YAxisLabel.GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = new(20,pos+40);
-        rectTransform.sizeDelta = new(80, 40);
-        rectTransform.anchorMin = new(0, 0);
-        rectTransform.anchorMax = new(0, 0);
-
-        Text text = YAxisLabel.GetComponent<Text>();
-        text.font = heartRateTextFont;
-        text.fontSize = 14;
-      
-        if (decimals){
-             number = (int)Math.Round(number, 0);
-        } else {
-            number =  (float)Math.Round(number, 2);
+            return menuTextObject;
         }
-      
-            YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " +  number);
 
-        return YAxisLabel;
+        private GameObject CreateYAxisLabel(string name, int pos, float number, bool decimals) {
+
+            GameObject YAxisLabel = new("YAxisLabel", typeof(Text));
+            YAxisLabel.transform.SetParent(graphContainer, false);
+            RectTransform rectTransform = YAxisLabel.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new(20, pos + 40);
+            rectTransform.sizeDelta = new(80, 40);
+            rectTransform.anchorMin = new(0, 0);
+            rectTransform.anchorMax = new(0, 0);
+
+            Text text = YAxisLabel.GetComponent<Text>();
+            text.font = valueTextFont;
+            text.fontSize = 14;
+
+            if (decimals) {
+                number = (int)Math.Round(number, 0);
+            } else {
+                number = (float)Math.Round(number, 2);
+            }
+
+            YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " + number);
+
+            return YAxisLabel;
 
 
- }
-    /// <summary>
+        }
+        /// <summary>
         /// 
         /// </summary>
         private void GenerateChart()
@@ -337,42 +337,42 @@ namespace CFA_HUD
 
             Latest.Clear();
 
-  
 
 
-        //Menu text to be taken from graphdata
-        GraphData GraphData = SelectGraphType(Slider.value.ToString());
 
-        GameObject MenuText = CreateMenuText(GraphData.Title);
-        chartObjectList.Add(MenuText);
+            //Menu text to be taken from graphdata
+            GraphData GraphData = SelectGraphType("1");
 
-        //Generates Yaxis labels based off y 
-        int i;
-        float number = GraphData.Ymax/6;  //6 being the amount of y axis labels to be populated.
-        for (i = 0; i < 7; i++){
-            
-            //In the event that number is less then 7, this processes it as a float later on.
-            if (number>7){
-         GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i*40, number*i, true );
-          chartObjectList.Add(YAxisLabel);
-            } else
-            {
-        GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i*40, number*i, false );
-        chartObjectList.Add(YAxisLabel);
+            GameObject MenuText = CreateMenuText(GraphData.Title);
+            chartObjectList.Add(MenuText);
+
+            //Generates Yaxis labels based off y 
+            int i;
+            float number = GraphData.Ymax / 6;  //6 being the amount of y axis labels to be populated.
+            for (i = 0; i < 7; i++) {
+
+                //In the event that number is less then 7, this processes it as a float later on.
+                if (number > 7) {
+                    GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i * 40, number * i, true);
+                    chartObjectList.Add(YAxisLabel);
+                } else
+                {
+                    GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i * 40, number * i, false);
+                    chartObjectList.Add(YAxisLabel);
+                }
+
             }
-          
-          }
 
 
-        //Run only for revelant ID's
-        int index = 0;
-        foreach (string key in Lines.Keys)
-        {
-            if (!filterIds.Contains(key))
+            //Run only for revelant ID's
+            int index = 0;
+            foreach (string key in Lines.Keys)
             {
-                RenderLine(index, Lines[key].ToList(), GetColour(index));
-            }
-            index++;
+                if (!FilterIds.Contains(key))
+                {
+                    RenderLine(index, Lines[key].ToList(), GetColour(index));
+                }
+                index++;
 
             }
 
@@ -458,24 +458,25 @@ namespace CFA_HUD
             IsAssumed = isAssumed;
         }
     }
-public class GraphData
-{
-
-    public string BluetoothID { get; set; }
-    public string Title { get; set; }
-
-    public CheckedBPMEntry(int bpm, int confidence, bool isAssumed) : base(bpm, confidence)
+    public class GraphData
     {
-        public ContinuousData Data { get; }
-        public bool IsAssumed { get; }
 
-    public int Ymin { get; set; }
-    public GraphData(string bluetoothID, string title, string axisLabel, float ymax, int ymin)
-    {
-        BluetoothID = bluetoothID;
-        Title = title;
-        AxisLabel = axisLabel;
-        Ymax = ymax;
-        Ymin = ymin;
+        public string BluetoothID { get; set; }
+        public string Title { get; set; }
+
+        public string AxisLabel { get; set; }
+
+        public int Ymin { get; set; }
+
+        public float Ymax { get; set; }
+        public GraphData(string bluetoothID, string title, string axisLabel, float ymax, int ymin)
+        {
+            BluetoothID = bluetoothID;
+            Title = title;
+            AxisLabel = axisLabel;
+            Ymax = ymax;
+            Ymin = ymin;
+        }
+    
     }
 }
