@@ -290,6 +290,10 @@ PrefabInstance:
       propertyPath: m_text
       value: X Graph
       objectReference: {fileID: 0}
+    - target: {fileID: 4523328371734076819, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4523328371734076829, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -372,6 +376,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4523328371734076829, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6909830387566649990, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8074706813416849457, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8334732603509141786, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746836244675240222, guid: dee7f0daca109eb41a2c3151d20b438f, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

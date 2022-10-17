@@ -87,18 +87,17 @@ public class WindowGraph : MonoBehaviour
         //This returns a MAX and MIN Y , a scale name and a graph name
         switch (ID)
         {
-            case "1":
-            
+            case "0D-18":   
                 return new GraphData(ID,"Heart Rate","BPM",240,0);
-            case "2":
-                return new GraphData(ID,"Accler", "Acc", 3, 0);
+            case "13-27":
+                return new GraphData(ID,"Accelerometer", "M/s", 3, 0);
             case "3":
-                return new GraphData(ID,"Sleeptime", "Sleep", 240, 0);
+                return new GraphData(ID,"Sleep", "Hours", 240, 0);
             case "4":
-                return new GraphData(ID,"Speed", "Data", 240, 0);
+                return new GraphData(ID,"Temperture", "*C", 240, 0);
             default:
                 Debug.Log("Unknown Blueooth ID.");
-                return new GraphData(ID,"Unknown", "", 300, 0);
+                return new GraphData(ID, "Unknown", "", 300, 0);
         }
     }
 
@@ -155,6 +154,7 @@ public class WindowGraph : MonoBehaviour
         float xPositionText = 200f + lineIndex * 80;
         float yPositionText = 20f;
 
+        //Not working for some reason?
         float average = patientDataInfo.ConvertAll((entry) => entry.Data).Aggregate((a, b) => a + b) / patientDataInfo.Count;
 
         GameObject RollingHeartText = CreateHeartRateText(new Vector2(xPositionText, yPositionText), colour, average);
@@ -244,7 +244,6 @@ public class WindowGraph : MonoBehaviour
     /// <param name="Data"></param>
     /// <returns></returns>
     /// 
-
     
     private GameObject CreateHeartRateText(Vector2 anchoredPosition, Color32 colour, float Data)
     {
@@ -253,15 +252,11 @@ public class WindowGraph : MonoBehaviour
         heartRateTextGameObject.transform.SetParent(graphContainer, false);
         RectTransform rectTransform = heartRateTextGameObject.GetComponent<RectTransform>();
 
-   
-
         rectTransform.anchoredPosition = anchoredPosition;
         rectTransform.sizeDelta = new(40, 40);
         rectTransform.anchorMin = new(0, 0);
         rectTransform.anchorMax = new(0, 0);
         Text text = heartRateTextGameObject.GetComponent<Text>();
-
-
 
         text.font = heartRateTextFont;
         text.fontSize = 30;
@@ -274,9 +269,6 @@ public class WindowGraph : MonoBehaviour
     }
     private GameObject CreateMenuText(string name)
     {
-
-
-
         GameObject menuTextObject = new("MenuText", typeof(Text));
         menuTextObject.transform.SetParent(graphContainer, false);
         RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
@@ -285,11 +277,9 @@ public class WindowGraph : MonoBehaviour
         rectTransform.anchorMin = new(0, 0);
         rectTransform.anchorMax = new(0, 0);
 
-
-
         Text text = menuTextObject.GetComponent<Text>();
         text.font = heartRateTextFont;
-        text.fontSize = 40;
+        text.fontSize = 35;
         menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
 
 
@@ -299,9 +289,6 @@ public class WindowGraph : MonoBehaviour
 
  private GameObject CreateYAxisLabel(string name, int pos, float number, bool decimals){
 
-
-    
-
         GameObject YAxisLabel = new("YAxisLabel", typeof(Text));
        YAxisLabel.transform.SetParent(graphContainer, false);
         RectTransform rectTransform = YAxisLabel.GetComponent<RectTransform>();
@@ -310,13 +297,10 @@ public class WindowGraph : MonoBehaviour
         rectTransform.anchorMin = new(0, 0);
         rectTransform.anchorMax = new(0, 0);
 
-
-
         Text text = YAxisLabel.GetComponent<Text>();
         text.font = heartRateTextFont;
         text.fontSize = 14;
       
-        
         if (decimals){
              number = (int)Math.Round(number, 0);
         } else {
@@ -324,7 +308,6 @@ public class WindowGraph : MonoBehaviour
         }
       
         YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " +  number);
-
 
         return YAxisLabel;
 
@@ -364,16 +347,15 @@ public class WindowGraph : MonoBehaviour
         //Menu text to be taken from graphdata
         GraphData GraphData = SelectGraphType(Slider.value.ToString());
 
-
-
         GameObject MenuText = CreateMenuText(GraphData.Title);
         chartObjectList.Add(MenuText);
 
         //Generates Yaxis labels based off y 
         int i;
-        float number = GraphData.Ymax/6;
+        float number = GraphData.Ymax/6;  //6 being the amount of y axis labels to be populated.
         for (i = 0; i < 7; i++){
             
+            //In the event that number is less then 7, this processes it as a float later on.
             if (number>7){
          GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i*40, number*i, true );
           chartObjectList.Add(YAxisLabel);
@@ -383,10 +365,10 @@ public class WindowGraph : MonoBehaviour
         chartObjectList.Add(YAxisLabel);
             }
           
-
           }
 
 
+        //Run only for revelant ID's
         int index = 0;
         foreach (string key in Lines.Keys)
         {
