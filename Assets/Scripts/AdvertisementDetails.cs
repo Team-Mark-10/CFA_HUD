@@ -19,9 +19,6 @@ using Windows.Security.Cryptography;
 
 namespace CFA_HUD
 {
-
-
-
     public class AdvertisementDetails
     {
 #if ENABLE_WINMD_SUPPORT
@@ -159,7 +156,7 @@ namespace CFA_HUD
 
         public string ToJSONFormat()
         {
-            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : [{(Data != null ? string.Join(",",Data.Select(x => x.ToJSONFormat())) : "{}")}] }}";
+            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : [{(Data != null ? string.Join(",", Data.Select(x => x.ToJSONFormat())) : "{}")}] }}";
         }
 
     }
@@ -177,7 +174,8 @@ namespace CFA_HUD
     /// An class that represents a arbitrary data value attached to a patient.
     /// </summary>
     /// <typeparam name="T">What type the of the Value this instance encapsulates.</typeparam>
-    public class ArbitraryData<T> : JSONSerializable { 
+    public class ArbitraryData<T> : JSONSerializable
+    {
 
         /// <summary>
         /// The name of the arbitrary data field
@@ -200,7 +198,7 @@ namespace CFA_HUD
         /// <example>
         /// For example:
         /// <code>
-        /// var unitData = new ArbitraryData("Unit", "ADFA", ArbitraryDataSerialisers.StringSerialiser);
+        /// var unitData = new ArbitraryData<string>("Unit", "ADFA", ArbitraryDataSerialisers.StringSerialiser);
         /// </code>
         /// </example>
         /// 
@@ -208,7 +206,7 @@ namespace CFA_HUD
         /// <param name="name">The name of the arbitrary data field</param>
         /// <param name="value">The intial value of the arbitrary data field</param>
         /// <param name="_serialiser"> The function that will convert this ArbitraryData object into a JSON string. See <see cref="ArbitraryDataSerializers"/> to get the default serialisers.</param>
-        public ArbitraryData(string name, T value, ArbitraryDataSerialiser<T> _serialiser) 
+        public ArbitraryData(string name, T value, ArbitraryDataSerialiser<T> _serialiser)
         {
             Name = name;
             Value = value;
@@ -230,13 +228,14 @@ namespace CFA_HUD
     /// </summary>
     /// <typeparam name="T">The type of the Arbitrary data to convert</typeparam>
     /// <param name="obj">The ArbitraryData object</param>
-    /// <returns></returns>
+    /// <returns>A JSON string.</returns>
     public delegate string ArbitraryDataSerialiser<T>(ArbitraryData<T> obj);
 
     /// <summary>
     /// A class containing default serialisers for common arbitrary data types. Use these in the <see cref="ArbitraryData{T}"/> constructors.
     /// </summary>
-    public static class ArbitraryDataSerializers {
+    public static class ArbitraryDataSerializers
+    {
         public static ArbitraryDataSerialiser<string> StringSerialiser = delegate (ArbitraryData<string> data)
         {
             return $"{{ \"name\": \"{data.Name}\", \"value\": \"{data.Value}\" }}";
