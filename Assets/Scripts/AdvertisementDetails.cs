@@ -64,7 +64,7 @@ namespace CFA_HUD
 #endif
     }
 
-    public class CFAAdvertisementDetails : AdvertisementDetails, JSONSerializable
+    public class CFAAdvertisementDetails : AdvertisementDetails, IJSONSerializable
     {
         public List<ContinuousData> ContinuousData { get; private set; }
         public Patient Patient { get; private set; }
@@ -118,7 +118,7 @@ namespace CFA_HUD
         }
     }
 
-    public class ContinuousData : JSONSerializable
+    public class ContinuousData : IJSONSerializable
     {
 
         public float Value { get; private set; }
@@ -141,13 +141,13 @@ namespace CFA_HUD
         }
     }
 
-    public class Patient : JSONSerializable
+    public class Patient : IJSONSerializable
     {
         public string Alias { get; private set; }
         public BLEAdvertiser Advertiser { get; private set; }
-        public List<JSONSerializable> Data { get; private set; }
+        public List<IJSONSerializable> Data { get; private set; }
 
-        public Patient(string alias, BLEAdvertiser advertiser, List<JSONSerializable> data = null)
+        public Patient(string alias, BLEAdvertiser advertiser, List<IJSONSerializable> data = null)
         {
             Alias = alias;
             Advertiser = advertiser;
@@ -159,108 +159,6 @@ namespace CFA_HUD
             return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : [{(Data != null ? string.Join(",", Data.Select(x => x.ToJSONFormat())) : "{}")}] }}";
         }
 
-    }
-
-    /// <summary>
-    /// The implementing class will be able to serialise its data into a string JSON format by hand.
-    /// </summary>
-    public interface JSONSerializable
-    {
-        public string ToJSONFormat();
-    }
-
-
-    /// <summary>
-    /// An class that represents a arbitrary data value attached to a patient.
-    /// </summary>
-    /// <typeparam name="T">What type the of the Value this instance encapsulates.</typeparam>
-    public class ArbitraryData<T> : JSONSerializable
-    {
-
-        /// <summary>
-        /// The name of the arbitrary data field
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// The value of the arbitrary data field
-        /// </summary>
-        public T Value { get; set; }
-
-        /// <summary>
-        /// The function that will convert this ArbitraryData object into a JSON string.
-        /// </summary>
-        private readonly ArbitraryDataSerialiser<T> serialiser;
-
-        /// <summary>
-        /// Constructs a new ArbitraryData Object. 
-        /// 
-        /// <example>
-        /// For example:
-        /// <code>
-        /// var unitData = new ArbitraryData<string>("Unit", "ADFA", ArbitraryDataSerialisers.StringSerialiser);
-        /// </code>
-        /// </example>
-        /// 
-        /// </summary>
-        /// <param name="name">The name of the arbitrary data field</param>
-        /// <param name="value">The intial value of the arbitrary data field</param>
-        /// <param name="_serialiser"> The function that will convert this ArbitraryData object into a JSON string. See <see cref="ArbitraryDataSerializers"/> to get the default serialisers.</param>
-        public ArbitraryData(string name, T value, ArbitraryDataSerialiser<T> _serialiser)
-        {
-            Name = name;
-            Value = value;
-            serialiser = _serialiser;
-        }
-
-        /// <summary>
-        /// Returns the ArbitraryData object in JSON format using the serialiser.
-        /// </summary>
-        /// <returns>A JSON String</returns>
-        public string ToJSONFormat()
-        {
-            return serialiser(this);
-        }
-    }
-
-    /// <summary>
-    /// The function signature of a function that converts ArbitraryData of type <c>T</c> to a JSON String.
-    /// </summary>
-    /// <typeparam name="T">The type of the Arbitrary data to convert</typeparam>
-    /// <param name="obj">The ArbitraryData object</param>
-    /// <returns>A JSON string.</returns>
-    public delegate string ArbitraryDataSerialiser<T>(ArbitraryData<T> obj);
-
-    /// <summary>
-    /// A class containing default serialisers for common arbitrary data types. Use these in the <see cref="ArbitraryData{T}"/> constructors.
-    /// </summary>
-    public static class ArbitraryDataSerializers
-    {
-        public static ArbitraryDataSerialiser<string> StringSerialiser = delegate (ArbitraryData<string> data)
-        {
-            return $"{{ \"name\": \"{data.Name}\", \"value\": \"{data.Value}\" }}";
-
-        };
-
-        public static ArbitraryDataSerialiser<bool> BoolSerialiser = delegate (ArbitraryData<bool> data)
-        {
-            return $"{{ \"name\": \"{data.Name}\", \"value\": {(data.Value ? "true" : "false")} }}";
-        };
-
-        public static ArbitraryDataSerialiser<float> FloatSerialiser = delegate (ArbitraryData<float> data)
-        {
-            return $"{{ \"name\": \"{data.Name}\", \"value\": {data.Value} }}";
-        };
-
-        public static ArbitraryDataSerialiser<int> IntSerialiser = delegate (ArbitraryData<int> data)
-        {
-            return $"{{ \"name\": \"{data.Name}\", \"value\": {data.Value} }}";
-        };
-
-        public static ArbitraryDataSerialiser<DateTime> DateTimeSerialiser = delegate (ArbitraryData<DateTime> data)
-        {
-            return $"{{ \"name\": \"{data.Name}\", \"value\": \"{XmlConvert.ToString(data.Value, XmlDateTimeSerializationMode.Utc)}\" }}";
-        };
     }
 
     public class BLEAdvertiser
