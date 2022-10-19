@@ -51,10 +51,15 @@ public class PatientAddedInstancer : MonoBehaviour
         AddNewGameObject(newInstance, patient);
 
         interactables.Add(newInstance.GetComponent<Interactable>());
+
+        var cbox = parentObject.GetComponentInParent<ScrollingObjectCollection>().GetComponentInChildren<ClippingBox>();
+        cbox.enabled = true;
+
+
         yield return new WaitForEndOfFrame();
         parentObject.UpdateCollection();
-        yield return new WaitForEndOfFrame();
-        GetComponentInChildren<ScrollingObjectCollection>()?.UpdateContent();
+        parentObject.GetComponentInParent<ScrollingObjectCollection>().UpdateContent();
+        cbox.enabled = false;
 
         Debug.Log("Object instantiated");
     }
