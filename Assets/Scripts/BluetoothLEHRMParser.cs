@@ -20,14 +20,27 @@ using Windows.Security.Cryptography;
 
 namespace CFA_HUD
 {
-    public class PatientAddedEventArgs : EventArgs
+    public class PatientAddedEventArgs : PatientBroadcastEventArgs
     {
-        public Patient Patient { get; }
+        public PatientAddedEventArgs(Patient patient) : base(patient)
+        {
+        }
+    }
 
-        public PatientAddedEventArgs(Patient patient)
+
+    public interface IPatientBroadcaster
+    {
+        public void AddListener(EventHandler<PatientBroadcastEventArgs> handler);
+    }
+
+    public class PatientBroadcastEventArgs : EventArgs
+    {
+        public PatientBroadcastEventArgs(Patient patient)
         {
             Patient = patient;
         }
+
+        public Patient Patient { get; private set; }
     }
 
     public class NewServiceIDEventArgs : EventArgs
@@ -40,6 +53,7 @@ namespace CFA_HUD
         }
 
     }
+
     public class AdvertisementReceivedEventArgs : EventArgs
     {
         public CFAAdvertisementDetails Advertisement { get; }
@@ -118,6 +132,8 @@ namespace CFA_HUD
             TestDBConnection();
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
+
+            AddAdvertiserAsPatient(new BLEAdvertiser(2, "asdf"), null);
         }
 
         /**
@@ -187,7 +203,7 @@ namespace CFA_HUD
                 alias = $"Patient {Patients.Count + 1}";
             }
 
-            Patient newPatient = new(alias, advertiser);
+            Patient newPatient = new(alias, advertiser, null);
             Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
 
             Patients.Add(newPatient);

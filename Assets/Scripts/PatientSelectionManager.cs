@@ -17,17 +17,9 @@ namespace CFA_HUD
             PatientActivation = patientActivation;
         }
     }
-    public class PatientSelectionManager : MonoBehaviour
+    public class PatientSelectionManager : PatientAddedInstancer
     {
-        public GameObject togglePrefab;
-        public GridObjectCollection toggleParent;
-        public TMP_Text debugText;
 
-
-        private List<PatientSelectorToggle> toggles;
-        private BluetoothLEHRMParser parser;
-
-        private readonly List<Patient> creationQueue = new();
         private bool isOutputDirty = false;
 
         public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;
@@ -36,9 +28,9 @@ namespace CFA_HUD
         {
             Dictionary<string, bool> activation = new();
 
-            foreach (var toggle in toggles)
+            foreach (var toggle in Interactables)
             {
-                activation.Add(toggle.Patient.Advertiser.Address.ToString(), toggle.IsToggled);
+                activation.Add(toggle.GetComponent<PatientSelectorToggle>().Patient.Advertiser.Address.ToString(), toggle.IsToggled);
             }
 
             Debug.Log(activation.ToString());
@@ -48,41 +40,30 @@ namespace CFA_HUD
             isOutputDirty = true;
         }
 
-        void Start()
-        {
-            toggles = new();
-
-            parser = GetComponentInParent<BluetoothLEHRMParser>();
-            parser.AdvertiserAdded += OnAdvertiserAdded;
-
-            foreach (var patient in parser.GetPatients())
-            {
-                InstantiateToggle(patient);
-            }
-
-            Debug.Log("Manager Start Finished");
-        }
-
 
         // Update is called once per frame
-        void Update()
+        public override void Update()
         {
-            if (creationQueue.Count > 0)
-            {
-                foreach (var patient in creationQueue)
-                {
-                    InstantiateToggle(patient);
-                }
-
-                creationQueue.Clear();
-                UpdateText();
-            }
+            base.Update();
 
             if (isOutputDirty)
             {
                 UpdateText();
                 isOutputDirty = false;
             }
+        }
+
+        protected override void AddNewGameObject(GameObject newInstance, Patient patient)
+        {
+            var toggle = newInstance.GetComponent<PatientSelectorToggle>();
+
+            toggle.Patient = patient;
+
+            toggle.AddToggleSelectedListener(OnButtonToggle);
+            toggle.AddToggleDeselectedListener(OnButtonToggle);
+
+            UpdateText();
+
         }
 
         void OnButtonToggle()
@@ -96,44 +77,12 @@ namespace CFA_HUD
         {
             string newText = "State: ";
 
-            foreach (var t in toggles)
+            foreach (var t in Interactables)
             {
-                newText += $"{t.Patient.Alias} => {t.IsToggled}, ";
+                var toggle = t.GetComponent<PatientSelectorToggle>();
+                newText += $"{toggle.Patient.Alias} => {t.IsToggled}, ";
             }
 
-            debugText.text = newText;
-        }
-
-        private void InstantiateToggle(Patient patient)
-        {
-            StartCoroutine(InstantiateToggleCoroutine(patient));
-
-        }
-
-        private IEnumerator InstantiateToggleCoroutine(Patient patient)
-        {
-            var toggleGameObject = Instantiate(togglePrefab, toggleParent.transform);
-
-            PatientSelectorToggle toggleComponent = toggleGameObject.GetComponent<PatientSelectorToggle>();
-
-            toggleComponent.Patient = patient;
-
-            toggleComponent.AddToggleSelectedListener(OnButtonToggle);
-            toggleComponent.AddToggleDeselectedListener(OnButtonToggle);
-
-            toggles.Add(toggleComponent);
-            yield return new WaitForEndOfFrame();
-            toggleParent.UpdateCollection();
-            yield return new WaitForEndOfFrame();
-            GetComponentInChildren<ScrollingObjectCollection>().UpdateContent();
-
-            Debug.Log("Toggle instantiated");
-        }
-
-        void OnAdvertiserAdded(object sender, PatientAddedEventArgs args)
-        {
-            Debug.Log("OnAdvertiserAdded");
-            creationQueue.Add(args.Patient);
         }
 
     }
