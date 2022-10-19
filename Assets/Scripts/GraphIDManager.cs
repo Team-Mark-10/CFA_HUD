@@ -10,17 +10,26 @@ namespace CFA_HUD
 {
     public class GraphIDManager : MonoBehaviour
     {
-        public GameObject arbitraryDataFieldPrefab;
+    
+
         public GridObjectCollection arbitraryDataParent;
 
         private BluetoothLEHRMParser ServiceIDList;
 
+        public GameObject BackplatePrefab;
+
+        public GameObject GraphParent;
+
+        Vector3 SpawnMyPosition = new Vector3(0f,0f,0.5f);
+
+
         public void Start()
         {
           List<string> ServiceIDList = new List<string>();
-            ServiceIDList.Add("test1");
+            ServiceIDList.Add("0D-18");
+            ServiceIDList.Add("13-27");
 
-            ServiceIDList.Add("test2");
+
             RegenerateFields(ServiceIDList);
         }
 
@@ -40,10 +49,18 @@ namespace CFA_HUD
         }
 
         private IEnumerator InstantiateArbitraryDataFieldCoroutine(string data)
-        {
-            var newInstance = Instantiate(DataSelection, arbitraryDataParent.transform);
+        { 
+            var newInstanceBackplate = Instantiate(BackplatePrefab, SpawnMyPosition, Quaternion.identity, GraphParent.transform);
 
-            newInstance.GetComponent<ArbitraryInputField>().ArbitraryData = data;
+            SpawnMyPosition.Set(newInstanceBackplate.transform.position.x-0.01f, newInstanceBackplate.transform.position.y-0.01f, newInstanceBackplate.transform.position.z - 0.01f);
+
+
+            //Slightly infront of previous graph not yet implemented
+
+
+            //set new instance serviceID to data
+
+            newInstanceBackplate.GetComponentInChildren<WindowGraph>().ServiceId = data;
 
             var scrollObject = arbitraryDataParent.GetComponentInParent<ScrollingObjectCollection>();
 

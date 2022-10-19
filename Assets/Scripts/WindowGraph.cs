@@ -10,7 +10,11 @@ namespace CFA_HUD
     public class WindowGraph : MonoBehaviour
     {
         public List<string> FilterIds { get; } = new();
-        public string ServiceId { get => serviceId; private set => serviceId = value; }
+
+
+
+    
+        public string ServiceId { get => serviceId; set => serviceId = value; }
      
 
         [SerializeField]
