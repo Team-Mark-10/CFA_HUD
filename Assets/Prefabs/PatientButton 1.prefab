@@ -296,7 +296,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4219629669807972874}
   - component: {fileID: 6695930936343641523}
-  - component: {fileID: 8331651024945360966}
   - component: {fileID: 1941434156756940455}
   - component: {fileID: 3284511894901060773}
   m_Layer: 0
@@ -368,14 +367,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &8331651024945360966
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1195486202957809896}
-  m_Mesh: {fileID: 0}
 --- !u!222 &1941434156756940455
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -687,7 +678,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5978723346650625548}
   - component: {fileID: 5978723346650625648}
-  - component: {fileID: 5978723346650625649}
   - component: {fileID: 5978723346650625550}
   - component: {fileID: 5978723346650625551}
   m_Layer: 0
@@ -696,7 +686,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &5978723346650625548
 RectTransform:
   m_ObjectHideFlags: 0
@@ -759,14 +749,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &5978723346650625649
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5978723346650625549}
-  m_Mesh: {fileID: 0}
 --- !u!222 &5978723346650625550
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -817,7 +799,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -829,9 +811,9 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
-  m_textAlignment: 514
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -913,7 +895,6 @@ GameObject:
   - component: {fileID: 3871892506282412380}
   - component: {fileID: 5978723347103836158}
   - component: {fileID: 5675955320720949079}
-  - component: {fileID: 4092088943449460166}
   - component: {fileID: 6830690874602797195}
   m_Layer: 0
   m_Name: PatientButton 1
@@ -1396,34 +1377,6 @@ MonoBehaviour:
   localCenter: {x: 0, y: 0, z: -0.008}
   bounds: {x: 0.032, y: 0.032}
   touchableCollider: {fileID: 5978723347103836131}
---- !u!114 &4092088943449460166
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5978723347103836159}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2cf098d972aeb8b4daa70b00381af006, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mainLabelText: {fileID: 5978723346650625551}
-  interactable: {fileID: 3871892506282412380}
-  seeItSayItLabel: {fileID: 6226996293525232420}
-  seeItSayItLabelText: {fileID: 3284511894901060773}
-  iconStyle: 0
-  iconCharLabel: {fileID: 1518862190257164738}
-  iconCharFont: {fileID: 0}
-  iconChar: 0
-  iconSpriteRenderer: {fileID: 3684349398360563205}
-  iconSprite: {fileID: 21300000, guid: 20f25674b9512834f88938d45ed495d7, type: 3}
-  iconQuadRenderer: {fileID: 5978723347622644565}
-  iconQuadTextureNameID: _MainTex
-  iconQuadTexture: {fileID: 2800000, guid: bb1b4a9241fba2042a81428e917afd5d, type: 3}
-  defaultButtonQuadMaterial: {fileID: 2100000, guid: fa419ab56051229449e3b813df8f295f, type: 2}
-  iconSet: {fileID: 11400000, guid: 8b386ef895f7c924f8c4b03d1d3ed683, type: 2}
-  defaultIconSet: {fileID: 11400000, guid: 8b386ef895f7c924f8c4b03d1d3ed683, type: 2}
 --- !u!114 &6830690874602797195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1436,6 +1389,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed6f8c899855bb2469448de531584620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainText: {fileID: 5978723346650625551}
 --- !u!1 &5978723347622644563
 GameObject:
   m_ObjectHideFlags: 0
