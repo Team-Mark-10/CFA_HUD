@@ -403,15 +403,19 @@ namespace CFA_HUD
         /// <param name="entry"></param>
         public void AddEntry(string id, ContinuousData entry)
         {
-            if (Latest.ContainsKey(id))
+            if (entry.ServiceId == serviceId)
             {
-                Latest[id] = entry;
+                if (Latest.ContainsKey(id))
+                {
+                    Latest[id] = entry;
 
+                }
+                else
+                {
+                    Latest.Add(id, entry);
+                }
             }
-            else
-            {
-                Latest.Add(id, entry);
-            }
+
         }
 
         /// <summary>
@@ -419,7 +423,7 @@ namespace CFA_HUD
         /// </summary>
         /// <param name="id"></param>
         /// <param name="entry"></param>
-        public void AppendLineEntry(string id, CheckedContinuousData entry)
+        private void AppendLineEntry(string id, CheckedContinuousData entry)
         {
             //Attemtps to add a value to the hashmap using the ID., Skips this step if it already exists.
             if (Lines.ContainsKey(id))

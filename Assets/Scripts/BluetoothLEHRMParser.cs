@@ -29,6 +29,17 @@ namespace CFA_HUD
             Patient = patient;
         }
     }
+
+    public class NewServiceIDEventArgs : EventArgs
+    { 
+        public string Data { set; get; }
+    
+        public NewServiceIDEventArgs(string data)
+        {
+            Data = data;
+        }
+
+    }
     public class AdvertisementReceivedEventArgs : EventArgs
     {
         public CFAAdvertisementDetails Advertisement { get; }
@@ -55,6 +66,8 @@ namespace CFA_HUD
         public event EventHandler<PatientAddedEventArgs> AdvertiserAdded;
         public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
 
+        public event EventHandler<NewServiceIDEventArgs> NewServiceIDReceived;
+
         private readonly List<CFAAdvertisementDetails> Advertisements = new();
         private readonly List<CFAAdvertisementDetails> UploadCache = new();
 
@@ -64,11 +77,20 @@ namespace CFA_HUD
 
         private bool dbConnectionActive = false;
 
+        private List<string> ServiceIDList = new List<string>();
+
+
         protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
         {
             var handler = AdvertisementReceived;
             handler?.Invoke(this, e);
+
+
+
         }
+
+
+
 
         // Start is called before the first frame update
         void Start()
@@ -110,6 +132,9 @@ namespace CFA_HUD
             Debug.Log($"API reports {response.StatusCode}");
 
             dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
+
+
+
         }
 
         async Task<bool> SyncWithDB()
@@ -153,6 +178,8 @@ namespace CFA_HUD
         /***
          * Generates and tracks a patient from a given bluetooth advertiser.
          */
+
+
         private Patient AddAdvertiserAsPatient(BLEAdvertiser advertiser, string alias)
         {
             if (alias == null)
@@ -169,6 +196,7 @@ namespace CFA_HUD
             return newPatient;
         }
 
+
         /***
          * Finds a patient from the tracked patients list with the given bluetooth address.
          */
@@ -183,6 +211,8 @@ namespace CFA_HUD
             }
             return null;
         }
+
+
 
 #if ENABLE_WINMD_SUPPORT
       
@@ -205,11 +235,35 @@ namespace CFA_HUD
                  patient = AddAdvertiserAsPatient(advertiser, null);
             }
             
+
             CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
+
+          
+            
+            foreach (ContinuousData in details.ContinuousData)
+             {
+      
+                if (!(ServiceIDList.Contains(ContinuousData.ServiceID)))
+                {
+                 ServiceIDList.add(ServiceID);
+                 NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(ServiceID));
+                }
+
+             }
+         
+                
+        
+
             Advertisements.Add(details);
             UploadCache.Add(details);
 
             OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
+
+
+
+            
+            NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs("sdfasdf"));
+           
         }
 
 #endif
@@ -217,5 +271,12 @@ namespace CFA_HUD
         {
             return Patients;
         }
+
+        public List<string> GetServiceIDs()
+        {
+            return ServiceIDList;
+        }
+                
     }
-}
+    }
+
