@@ -118,6 +118,8 @@ namespace CFA_HUD
             TestDBConnection();
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
+
+       
         }
 
         /**

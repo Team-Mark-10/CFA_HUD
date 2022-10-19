@@ -30,7 +30,7 @@ namespace CFA_HUD
 
         // Start is called before the first frame update
         void Start()
-        {
+        {   
             GetComponentInChildren<TextMesh>().text = Data;
         }
     }

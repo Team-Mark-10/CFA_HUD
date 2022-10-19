@@ -36,7 +36,7 @@ namespace CFA_HUD
                 //Call other function with simulated data
                 graph
                     .AddEntry(ID1,
-    new ContinuousData("0D-18", Random.Range(30, 2000), Random.Range(70, 100)));
+    new ContinuousData("0D-18", Random.Range(30, 300), Random.Range(70, 100)));
 
                 graph
                    .AddEntry(ID2,
