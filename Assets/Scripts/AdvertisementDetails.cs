@@ -64,7 +64,7 @@ namespace CFA_HUD
 #endif
     }
 
-    public class CFAAdvertisementDetails : AdvertisementDetails
+    public class CFAAdvertisementDetails : AdvertisementDetails, IJSONSerializable
     {
         public List<ContinuousData> ContinuousData { get; private set; }
         public Patient Patient { get; private set; }
@@ -118,7 +118,7 @@ namespace CFA_HUD
         }
     }
 
-    public class ContinuousData
+    public class ContinuousData : IJSONSerializable
     {
 
         public float Value { get; private set; }
@@ -141,23 +141,47 @@ namespace CFA_HUD
         }
     }
 
-    public class Patient
+    public class Patient : IJSONSerializable
     {
-        public string Alias { get; private set; }
-        public BLEAdvertiser Advertiser { get; private set; }
+        internal IEnumerable<object> ContinuousData;
 
-        public Patient(string alias, BLEAdvertiser advertiser)
+        public string Alias { get => Data[0].ToDisplayFormat(); }
+        public BLEAdvertiser Advertiser { get; private set; }
+        public List<IArbitraryData> Data { get; private set; }
+
+        public Patient(string alias, BLEAdvertiser advertiser, List<IArbitraryData> data = null)
         {
-            Alias = alias;
+            var defaultData = new List<IArbitraryData>()
+            {
+                new ArbitraryStringValue("Name", alias),
+                new ArbitraryDateTimeValue("Date of Birth", DateTime.Now),
+
+            };
+
+            if (data != null)
+            {
+                defaultData.AddRange(data);
+            }
             Advertiser = advertiser;
+            Data = defaultData;
         }
 
         public string ToJSONFormat()
         {
-            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : {{}} }}";
+
+            var includedData = new List<IArbitraryData>();
+            
+            if(Data != null)
+            {
+                includedData = Data.FindAll(x => x.IsUserSet());
+            }
+
+
+            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : [{(includedData != null ? string.Join(",", Data.Select(x => x.ToJSONFormat())) : "{}")}] }}";
         }
 
     }
+
     public class BLEAdvertiser
     {
         public ulong Address { get; private set; }
