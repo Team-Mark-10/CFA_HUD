@@ -77,7 +77,7 @@ namespace CFA_HUD
 
         private bool dbConnectionActive = false;
 
-        private List<string> ServiceIDList = new List<string>();
+        public List<string> ServiceIDList = new List<string>();
 
 
         protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
