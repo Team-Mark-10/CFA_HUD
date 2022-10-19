@@ -176,7 +176,7 @@ namespace CFA_HUD
                 alias = $"Patient {Patients.Count + 1}";
             }
 
-            Patient newPatient = new(alias, advertiser, new List<IArbitraryData>() { new ArbitraryBoolValue("Okay??", false), new ArbitraryStringValue("Mood", "sad") });
+            Patient newPatient = new(alias, advertiser, null);
             Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
 
             Patients.Add(newPatient);

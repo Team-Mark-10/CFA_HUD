@@ -23,6 +23,8 @@ namespace CFA_HUD
     {
         public string GetName();
 
+        public bool IsUserSet();
+
         public bool TrySetValue(string value);
 
         public string ToDisplayFormat();
@@ -46,6 +48,8 @@ namespace CFA_HUD
         /// </summary>
         public T Value { get; set; }
 
+        public bool IsUserSet { get; protected set; } = false;
+
         /// <summary>
         /// Constructs a new ArbitraryData Object. 
         /// 
@@ -60,10 +64,11 @@ namespace CFA_HUD
         /// <param name="name">The name of the arbitrary data field</param>
         /// <param name="value">The intial value of the arbitrary data field</param>
         /// <param name="_serialiser"> The function that will convert this ArbitraryData object into a JSON string. See <see cref="ArbitraryDataSerializers"/> to get the default serialisers.</param>
-        public ArbitraryData(string name, T value)
+        public ArbitraryData(string name, T value, bool isUserSet = false)
         {
             Name = name;
             Value = value;
+            IsUserSet = isUserSet;
         }
 
         /// <summary>
@@ -89,6 +94,11 @@ namespace CFA_HUD
         {
             return Name;
         }
+
+        bool IArbitraryData.IsUserSet()
+        {
+            return IsUserSet;
+        }
     }
 
 
@@ -110,6 +120,8 @@ namespace CFA_HUD
         {
             var success = int.TryParse(value, out int newValue);
             Value = newValue;
+
+            IsUserSet = true;
 
             return success;
         }
@@ -133,6 +145,9 @@ namespace CFA_HUD
         {
             var success = float.TryParse(value, out float newValue);
             Value = newValue;
+
+            IsUserSet = true;
+
 
             return success;
         }
@@ -190,6 +205,9 @@ namespace CFA_HUD
         public override bool TrySetValue(string value)
         {
             Value = value;
+
+            IsUserSet = true;
+
             return true;
         }
     }
@@ -212,6 +230,8 @@ namespace CFA_HUD
         {
             var success = DateTime.TryParse(value, out DateTime newValue);
             Value = newValue;
+
+            IsUserSet = true;
 
             return success;
         }

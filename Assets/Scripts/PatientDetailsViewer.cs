@@ -4,6 +4,8 @@ using UnityEngine;
 using CFA_HUD;
 using System.Text;
 using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Experimental.UI;
+using System;
 
 public class PatientDetailsViewer : MonoBehaviour
 {
@@ -18,7 +20,7 @@ public class PatientDetailsViewer : MonoBehaviour
 
     private bool isEditing = false;
     public bool IsEditing => isEditing;
-
+    public MRTKUGUIInputField newFieldNameInputField;
 
     public Patient Patient { get; set; }
     // Start is called before the first frame update
@@ -47,11 +49,14 @@ public class PatientDetailsViewer : MonoBehaviour
 
     private void StartEditing()
     {
+
         Debug.Log("Start editing");
         isEditing = true;
 
         viewer.SetActive(false);
         editor.SetActive(true);
+
+        editor.GetComponent<ArbitraryDataManager>().RegenerateFields(Patient);
 
     }
 
@@ -78,9 +83,12 @@ public class PatientDetailsViewer : MonoBehaviour
 
     private void OnButtonListPatientPressed(object sender, PatientBroadcastEventArgs e)
     {
+
         if (!IsEditing)
         {
             Patient = e.Patient;
+            editor.GetComponent<ArbitraryDataManager>().RegenerateFields(Patient);
+
             RenderDetails();
              
             EnableViewer();
@@ -88,6 +96,8 @@ public class PatientDetailsViewer : MonoBehaviour
         {
             if (StopEditing()) {
                 Patient = e.Patient;
+                editor.GetComponent<ArbitraryDataManager>().RegenerateFields(Patient);
+
                 RenderDetails();
             };
         }
@@ -107,9 +117,53 @@ public class PatientDetailsViewer : MonoBehaviour
         foreach(var ad in Patient.Data)
         {
             s.AppendJoin(":", ad.GetName(), ad.ToDisplayFormat());
+            s.AppendLine();
         }
 
+        Debug.Log(Patient.ToJSONFormat());
+
         detailsText.text = s.ToString();
+    }
+
+    public enum AddableArbitraryDataTypes
+    {
+        INT, FLOAT, BOOL, STRING, DATETIME
+    }
+
+    public void AddField(int type)
+    {
+        string name = newFieldNameInputField.text;
+
+        if (name.Length > 0 && isEditing && Patient != null)
+        {
+            switch (type)
+            {
+                case 0:
+                    Patient.Data.Add(new ArbitraryIntValue(name, 0));
+                    break;
+                case 1:
+                    Patient.Data.Add(new ArbitraryFloatValue(name, 0));
+
+                    break;
+                case 2:
+                    Patient.Data.Add(new ArbitraryBoolValue(name, false));
+
+                    break;
+                case 3:
+                    Patient.Data.Add(new ArbitraryStringValue(name, ""));
+
+                    break;
+                case  4:
+                    Patient.Data.Add(new ArbitraryDateTimeValue(name, DateTime.Now));
+
+                    break;
+            }
+
+            
+        }
+
+        editor.GetComponent<ArbitraryDataManager>().RegenerateFields(Patient);
+
     }
 
     // Update is called once per frame

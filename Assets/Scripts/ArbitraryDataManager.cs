@@ -19,8 +19,13 @@ namespace CFA_HUD
             RegenerateFields(test);
         }
 
-        private void RegenerateFields(Patient patient)
+        public void RegenerateFields(Patient patient)
         {
+            var children = new List<GameObject>();
+            foreach (Transform child in arbitraryDataParent.transform) children.Add(child.gameObject);
+            children.ForEach(child => Destroy(child));
+
+
             foreach (var data in patient.Data)
             {
                 InstantiateArbitraryDataField(data);

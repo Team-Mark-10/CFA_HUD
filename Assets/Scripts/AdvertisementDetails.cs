@@ -145,20 +145,39 @@ namespace CFA_HUD
     {
         internal IEnumerable<object> ContinuousData;
 
-        public string Alias { get; private set; }
+        public string Alias { get => Data[0].ToDisplayFormat(); }
         public BLEAdvertiser Advertiser { get; private set; }
         public List<IArbitraryData> Data { get; private set; }
 
         public Patient(string alias, BLEAdvertiser advertiser, List<IArbitraryData> data = null)
         {
-            Alias = alias;
+            var defaultData = new List<IArbitraryData>()
+            {
+                new ArbitraryStringValue("Name", alias),
+                new ArbitraryDateTimeValue("Date of Birth", DateTime.Now),
+
+            };
+
+            if (data != null)
+            {
+                defaultData.AddRange(data);
+            }
             Advertiser = advertiser;
-            Data = data ?? new List<IArbitraryData>();
+            Data = defaultData;
         }
 
         public string ToJSONFormat()
         {
-            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : [{(Data != null ? string.Join(",", Data.Select(x => x.ToJSONFormat())) : "{}")}] }}";
+
+            var includedData = new List<IArbitraryData>();
+            
+            if(Data != null)
+            {
+                includedData = Data.FindAll(x => x.IsUserSet());
+            }
+
+
+            return $"{{\"alias\": \"{Alias}\", \"bluetooth_id\": \"{Advertiser.Address}\", \"data\" : [{(includedData != null ? string.Join(",", Data.Select(x => x.ToJSONFormat())) : "{}")}] }}";
         }
 
     }
