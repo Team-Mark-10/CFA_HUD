@@ -85,7 +85,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &4523328371734076816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -464,6 +464,7 @@ MonoBehaviour:
   serviceId: 0D-18
   circleSprite: {fileID: 21300000, guid: 2553a132d8fa470499da7aca8091d8f8, type: 3}
   deadSprite: {fileID: 21300000, guid: 4e60f28162095b048872ff0f24d09261, type: 3}
+  upSprite: {fileID: 21300000, guid: d208c9e944c6df74eb5dcad0fffc674d, type: 3}
   parserGO: {fileID: 0}
   selectorGO: {fileID: 0}
 --- !u!1 &4523328372147539520

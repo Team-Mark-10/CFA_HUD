@@ -29,6 +29,10 @@ namespace CFA_HUD
         private Sprite deadSprite;
 
         [SerializeField]
+        private Sprite upSprite;
+
+
+        [SerializeField]
         private GameObject parserGO;
 
         [SerializeField]
@@ -85,7 +89,7 @@ namespace CFA_HUD
             switch (ID)
             {
                 case "0D-18":
-                    return new GraphData(ID, "Heart Rate", "BPM", 240, 0);
+                    return new GraphData(ID, "Heart Rate", "BPM", 280, 0);
                 case "13-27":
                     return new GraphData(ID, "Accelerometer", "M/s", 3, 0);
                 case "3":
@@ -117,17 +121,27 @@ namespace CFA_HUD
         /// </summary>
         /// <param name="patientBPMData">List of BPM data</param>
         /// <param name="colour">The colour of the line to be drawn</param>
-        private void RenderLine(int lineIndex, List<CheckedContinuousData> checkedData, Color32 colour)
+        private void RenderLine(int lineIndex, List<CheckedContinuousData> checkedData, Color32 colour, GraphData graph)
         {
+           bool maxHeight = false;
             GameObject lastCircleGameObject = null;
             for (int i = 0; i < checkedData.Count; i++)
             {
                 float confidence = checkedData[i].Data.Confidence;
+                
+
                 float xPosition = (checkedData.Count - i) * xSize;
                 float yPosition = checkedData[i].Data.Value + yMinimum;
 
+                if (yPosition >= graph.Ymax)
+                {
+                    yPosition = graph.Ymax;
+                    maxHeight = true;
+
+                }
+
                 GameObject circleGameObject =
-                    CreateCircle(new Vector2(xPosition, yPosition), colour, checkedData[i].IsAssumed);
+                    CreateCircle(new Vector2(xPosition, yPosition), colour, checkedData[i].IsAssumed, maxHeight);
 
                 chartObjectList.Add(circleGameObject);
 
@@ -163,11 +177,12 @@ namespace CFA_HUD
         /// <param name="anchoredPosition"></param>
         /// <param name="colour"></param>
         /// <returns></returns>
-        private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool isAssumed)
+        private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool isAssumed, bool height)
         {
             GameObject gameObject = new("circle", typeof(Image));
 
             gameObject.transform.SetParent(graphContainer, false);
+         
             if (isAssumed)
             {
                 gameObject.GetComponent<Image>().sprite = deadSprite;
@@ -178,6 +193,14 @@ namespace CFA_HUD
                 gameObject.GetComponent<Image>().sprite = circleSprite;
 
             }
+
+            if (height)
+
+            {
+
+                gameObject.GetComponent<Image>().sprite = upSprite;
+            }
+
 
 
             RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
@@ -368,7 +391,7 @@ namespace CFA_HUD
             {
                 if (!FilterIds.Contains(key))
                 {
-                    RenderLine(index, Lines[key].ToList(), GetColour(index));
+                    RenderLine(index, Lines[key].ToList(), GetColour(index), GraphData);
                 }
                 index++;
 
