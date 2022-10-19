@@ -143,6 +143,8 @@ namespace CFA_HUD
 
     public class Patient : IJSONSerializable
     {
+        internal IEnumerable<object> ContinuousData;
+
         public string Alias { get; private set; }
         public BLEAdvertiser Advertiser { get; private set; }
         public List<IArbitraryData> Data { get; private set; }

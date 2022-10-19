@@ -13,6 +13,9 @@ public class PatientDetailsViewer : MonoBehaviour
     public TMPro.TMP_Text nameText;
     public TMPro.TMP_Text detailsText;
 
+    public GameObject viewer;
+    public GameObject editor;
+
     private bool isEditing = false;
     public bool IsEditing => isEditing;
 
@@ -23,11 +26,20 @@ public class PatientDetailsViewer : MonoBehaviour
     {
         buttonList.PatientPressed += OnButtonListPatientPressed;
 
-        editButton.ButtonPressed.AddListener(ToggleEditing);
+        editButton.GetComponent<Interactable>().OnClick.AddListener(() => ToggleEditing());
+
+        if (Patient == null)
+        {
+            viewer.SetActive(false);
+            editor.SetActive(false);
+
+            editButton.gameObject.SetActive(false);
+        }
     }
 
     public void ToggleEditing()
     {
+        Debug.Log("Toggling");
         if (isEditing) StopEditing();
         else StartEditing();
     }
@@ -35,16 +47,33 @@ public class PatientDetailsViewer : MonoBehaviour
 
     private void StartEditing()
     {
+        Debug.Log("Start editing");
         isEditing = true;
 
+        viewer.SetActive(false);
+        editor.SetActive(true);
 
     }
 
     private bool StopEditing()
     {
+        Debug.Log("Stop editin");
         isEditing = false;
 
+
+        EnableViewer();
+
         return !isEditing;
+    }
+
+    private void EnableViewer()
+    {
+        RenderDetails();
+
+        editButton.gameObject.SetActive(true);
+
+        viewer.SetActive(true);
+        editor.SetActive(false);
     }
 
     private void OnButtonListPatientPressed(object sender, PatientBroadcastEventArgs e)
@@ -53,6 +82,14 @@ public class PatientDetailsViewer : MonoBehaviour
         {
             Patient = e.Patient;
             RenderDetails();
+             
+            EnableViewer();
+        } else
+        {
+            if (StopEditing()) {
+                Patient = e.Patient;
+                RenderDetails();
+            };
         }
     }
 

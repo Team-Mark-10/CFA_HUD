@@ -148,7 +148,7 @@ namespace CFA_HUD
 
         public override string ToDisplayFormat()
         {
-            return $"{(Value ? "True" : "False")}";
+            return $"{(Value ? "TRUE" : "FALSE")}";
         }
 
         public override string ToJSONFormat()
