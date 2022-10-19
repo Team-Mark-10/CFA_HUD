@@ -21,6 +21,8 @@ namespace CFA_HUD
     /// </summary>
     public interface IArbitraryData : IJSONSerializable
     {
+        public string GetName();
+
         public bool TrySetValue(string value);
 
         public string ToDisplayFormat();
@@ -82,6 +84,11 @@ namespace CFA_HUD
         /// <param name="value">The string to parse</param>
         /// <returns>If setting the value was successful or not</returns>
         public abstract bool TrySetValue(string value);
+
+        public string GetName()
+        {
+            return Name;
+        }
     }
 
 
