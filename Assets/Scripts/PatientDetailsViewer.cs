@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using CFA_HUD;
 using System.Text;
+using Microsoft.MixedReality.Toolkit.UI;
 
 public class PatientDetailsViewer : MonoBehaviour
 {
     public PatientButtonList buttonList;
+    public PressableButtonHoloLens2 editButton;
 
     public TMPro.TMP_Text nameText;
     public TMPro.TMP_Text detailsText;
@@ -20,6 +22,29 @@ public class PatientDetailsViewer : MonoBehaviour
     void Start()
     {
         buttonList.PatientPressed += OnButtonListPatientPressed;
+
+        editButton.ButtonPressed.AddListener(ToggleEditing);
+    }
+
+    public void ToggleEditing()
+    {
+        if (isEditing) StopEditing();
+        else StartEditing();
+    }
+
+
+    private void StartEditing()
+    {
+        isEditing = true;
+
+
+    }
+
+    private bool StopEditing()
+    {
+        isEditing = false;
+
+        return !isEditing;
     }
 
     private void OnButtonListPatientPressed(object sender, PatientBroadcastEventArgs e)
