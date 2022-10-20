@@ -91,7 +91,7 @@ namespace CFA_HUD
 
         private bool dbConnectionActive = false;
 
-        private List<string> ServiceIDList = new List<string>();
+        public List<string> ServiceIDList = new List<string>();
 
 
         protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
@@ -203,7 +203,7 @@ namespace CFA_HUD
                 alias = $"Patient {Patients.Count + 1}";
             }
 
-            Patient newPatient = new(alias, advertiser, null);
+            Patient newPatient = new(alias, advertiser);
             Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
 
             Patients.Add(newPatient);

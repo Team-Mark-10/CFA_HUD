@@ -10,7 +10,11 @@ namespace CFA_HUD
     public class WindowGraph : MonoBehaviour
     {
         public List<string> FilterIds { get; } = new();
-        public string ServiceId { get => serviceId; private set => serviceId = value; }
+
+
+
+    
+        public string ServiceId { get => serviceId; set => serviceId = value; }
      
 
         [SerializeField]
@@ -18,7 +22,7 @@ namespace CFA_HUD
 
         private const int circleSize = 11;
         private const int DotCount = 15;
-        private readonly float yMinimum = 50f;
+       
         private readonly float xSize = 50f;
 
         private readonly Color32[] Colours = new[] { new Color32(255, 0, 0, 100), new Color32(0, 255, 0, 100), new Color32(0, 0, 255, 100), new Color32(0, 255, 255, 100) };
@@ -31,12 +35,11 @@ namespace CFA_HUD
         [SerializeField]
         private Sprite upSprite;
 
+        
+        public GameObject parserGO;
 
-        [SerializeField]
-        private GameObject parserGO;
-
-        [SerializeField]
-        private GameObject selectorGO;
+        
+        public GameObject selectorGO;
 
         private readonly List<GameObject> chartObjectList = new();
 
@@ -61,7 +64,6 @@ namespace CFA_HUD
         private void Start()
         {
             var parser = parserGO.GetComponent<BluetoothLEHRMParser>();
-
             parser.AdvertisementReceived += OnAdvertisementReceived;
 
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
@@ -129,13 +131,14 @@ namespace CFA_HUD
             {
                 float confidence = checkedData[i].Data.Confidence;
                 
-
+                
+                
                 float xPosition = (checkedData.Count - i) * xSize;
-                float yPosition = checkedData[i].Data.Value + yMinimum;
+                float yPosition = (checkedData[i].Data.Value*100)/(graph.Ymax)/100*240+47; //factor of y max
 
-                if (yPosition >= graph.Ymax)
+                if (yPosition >= 350)
                 {
-                    yPosition = graph.Ymax;
+                    yPosition = 350;
                     maxHeight = true;
 
                 }

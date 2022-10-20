@@ -30,7 +30,7 @@ RectTransform:
   m_GameObject: {fileID: 649456472849636781}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 90}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4523328371086833925}
@@ -85,7 +85,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &4523328371734076816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -461,7 +461,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1d0de66fe3e73f48b82a8b624f4635f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serviceId: 0D-18
+  serviceId: 
   circleSprite: {fileID: 21300000, guid: 2553a132d8fa470499da7aca8091d8f8, type: 3}
   deadSprite: {fileID: 21300000, guid: 4e60f28162095b048872ff0f24d09261, type: 3}
   upSprite: {fileID: 21300000, guid: d208c9e944c6df74eb5dcad0fffc674d, type: 3}

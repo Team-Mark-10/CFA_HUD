@@ -1,0 +1,312 @@
+[33mcommit c939d82bfa392da6a4f527fed260893def6a264a[m[33m ([m[1;36mHEAD -> [m[1;32mfeature/multi-data-support-development[m[33m, [m[1;31morigin/feature/multi-data-support-development[m[33m)[m
+Merge: 40daab5 f8e6540
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Thu Oct 20 10:27:08 2022 +1100
+
+    merged leccy's graphs
+
+[33mcommit f8e6540cee1ea5ff3671892d6a212a6537c514f5[m[33m ([m[1;31morigin/feature/patient-view[m[33m)[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Thu Oct 20 10:11:25 2022 +1100
+
+    patient view adds arbitrary data
+
+[33mcommit cc4633d70895cff7f02d769eb74f76006bc24573[m
+Merge: 6682b9f 7f97e3f
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Thu Oct 20 09:08:06 2022 +1100
+
+    patient view toggles correctly
+
+[33mcommit 6682b9f3b74f54ad2813455bf8ce08f6536520ab[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Thu Oct 20 08:23:27 2022 +1100
+
+    added edit button
+
+[33mcommit 7f97e3fabbf84f761565552c318cb653bf4b5194[m[33m ([m[1;31morigin/feature/arbitrary-patient-data[m[33m, [m[1;32mfeature/arbitrary-patient-data[m[33m)[m
+Author: rcmatteo17 <89623529+rcmatteo17@users.noreply.github.com>
+Date:   Thu Oct 20 00:20:34 2022 +1100
+
+    user input functionality
+
+[33mcommit 7cb860f02315e1be46727251fec4f256aa8ef4b8[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Wed Oct 19 23:31:15 2022 +1100
+
+    fixed button text
+
+[33mcommit f29008dbe1b30f6b20b062316478cb87b4006bfd[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Wed Oct 19 23:20:07 2022 +1100
+
+    fixed button rendering glitch
+
+[33mcommit baae7ad3f686d80a108ca700427269d621abed25[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Wed Oct 19 21:58:42 2022 +1100
+
+    patient selector working
+
+[33mcommit 40daab5de3ed1bb27f09a8779f8426898ed43c8e[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Wed Oct 19 21:50:37 2022 +1100
+
+    Fixed error with graph
+
+[33mcommit 0f828d07007649cbec8772457830477bda8bd724[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Wed Oct 19 21:34:51 2022 +1100
+
+    Update Simulatedscript.cs
+
+[33mcommit a4bdf32e6dda32ae76ef214e875aabd9463dda15[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Wed Oct 19 20:18:30 2022 +1100
+
+    Added data structure to bluetooth parser
+
+[33mcommit d4ab896b637bd0a71db58aa4f101fdd9cb035315[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Tue Oct 18 11:08:10 2022 +1100
+
+    made ArbitraryData better
+
+[33mcommit 3da9ea33d985d711fc387c68aee06d22e426284e[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Mon Oct 17 16:49:13 2022 +1100
+
+    documentation fixes
+
+[33mcommit f7b923db6c04f011f74b7b75672cb728a869d89f[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Mon Oct 17 16:45:16 2022 +1100
+
+    added commenting and serialization fixes
+
+[33mcommit a54f87ddb6936facbe0142e521d795d413ffd241[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Mon Oct 17 15:00:35 2022 +1100
+
+    added classes to serialise arbitrary patient data
+
+[33mcommit 9037167e8941548524d8295b8c1c9d44bb549974[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 13:30:07 2022 +1100
+
+    Bug and error fixes
+
+[33mcommit 6a68a74910c4e5a1baa8f3e9a4beb91869ed62bd[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 13:15:44 2022 +1100
+
+    Merged branch
+
+[33mcommit bd2652398f564397e5bf84a50c88d14a37ffc166[m
+Merge: c7e92b8 a843944
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 12:45:36 2022 +1100
+
+    Merge branch 'feature/patient-graph' into feature/multi-data-support-development
+
+[33mcommit a843944bde07cf756150b0fc685d64225c71a30c[m[33m ([m[1;31morigin/feature/patient-graph[m[33m)[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 12:10:00 2022 +1100
+
+    Bug fixing
+
+[33mcommit 30c4489f213a115e64b7f00e07d2f6107aaf350f[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 11:05:27 2022 +1100
+
+    Tab function for graph data working
+
+[33mcommit 7b569037395074695c476d874342c9e527dba4a7[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 09:25:30 2022 +1100
+
+    Changed data structure away from just BPM
+
+[33mcommit 0e440ef497308c950b9f6c7a5921bace37e44429[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Oct 17 09:12:06 2022 +1100
+
+    Added major graphical improvements
+
+[33mcommit c7e92b82cb62fabc68fe1d583eebf6897d960f2d[m[33m ([m[1;31morigin/feature/multi-sensor-support[m[33m)[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Mon Oct 17 00:47:10 2022 +1100
+
+    fixed json conversion, auto uploads readinds to DB
+
+[33mcommit 5abe66eb5d5b0b744428e6adc30969e33ca7c074[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Sun Oct 16 12:58:09 2022 +1100
+
+    changable graph title and small refactorings
+
+[33mcommit 7a4d7aa4410b8fc3582fc0b440f6bf59dbeefbd8[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Sun Oct 16 12:42:41 2022 +1100
+
+    graphing for multi data types works
+
+[33mcommit 3ecd98f74bdc3ab0c499a2de2da695fdd94501ea[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Sat Oct 15 16:40:48 2022 +1100
+
+    fixed errors, added float32 support for value
+
+[33mcommit c8ee215b636f4aa92c9bdfce1196acbd7c9ec45e[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Sat Oct 15 12:23:29 2022 +1100
+
+    refactored graph and parser to support multiple data types
+
+[33mcommit 84b090b88fb297db7634efc618d39c061891d533[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Fri Oct 14 14:40:51 2022 +1100
+
+    added http client
+
+[33mcommit b3edda38a72e4b22f6f7c09cd857329f9dafc1ea[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Wed Oct 5 14:32:43 2022 +1100
+
+    Added graph data class
+    
+    Added graph data class in preperation for tabs
+
+[33mcommit f63c9fd5e50e6e5d73b1e2f638c3bc9c2d531cd9[m
+Merge: 2ae8d41 5fc9155
+Author: rcmatteo17 <89623529+rcmatteo17@users.noreply.github.com>
+Date:   Wed Oct 5 12:14:01 2022 +1100
+
+    Merge pull request #2 from Team-Mark-10/feature/patient-graph
+    
+    Patient graph with Selection GUI
+
+[33mcommit 5fc91558911acf0ab69ee4528cecbca9dbe1d6e0[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Wed Sep 28 11:24:21 2022 +1000
+
+    cleaned graph code and added proper time sync
+
+[33mcommit 5b24205d4d6d004a021076eaebdb15ac9681fa87[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Tue Sep 27 23:20:22 2022 +1000
+
+    fixed button layout
+
+[33mcommit 43c2bb697caf91423aa4c387d62904dae055626c[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Tue Sep 27 14:24:11 2022 +1000
+
+    Added dead sprite, sprite
+
+[33mcommit 4d4ac9aeb4a8780e06c042ad9acd26b32627f309[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Tue Sep 27 13:30:30 2022 +1000
+
+    Update WindowGraph.cs
+    
+    Allows for inclusion of deadsprite
+
+[33mcommit 15e8b72dbc18494f9d3aa5510f1504a9c4ebc78a[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Tue Sep 27 12:12:03 2022 +1000
+
+    intergrated selector with graph
+
+[33mcommit 31d6ccc75a6fb8450b7bd3b20cd6da63cc758970[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Tue Sep 27 10:03:45 2022 +1000
+
+    refactored chart code
+
+[33mcommit c03def3715c6217517a496d4e5f486a76712db0b[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Tue Sep 27 08:38:07 2022 +1000
+
+    Updating tracking components on dialogs
+
+[33mcommit 8e1d8cecdd1512bae9837e252a887d17971fbb41[m
+Merge: 5baa9bc ca4c089
+Author: Your Name <indegamedev@gmail.com>
+Date:   Tue Sep 27 08:20:53 2022 +1000
+
+    Merge of graph into patient selection
+
+[33mcommit 5baa9bc67bd8d4829ba660819686abd3752aee97[m[33m ([m[1;31morigin/feature/patient-selection[m[33m)[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Mon Sep 26 21:51:38 2022 +1000
+
+    Toggle per Advertiser working
+
+[33mcommit ca4c08966d0b7be2000881b90eb3ee8e858a85b5[m[33m ([m[1;31morigin/feature/Unity_Graph[m[33m)[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Sep 26 17:48:53 2022 +1000
+
+    Added the heart rate graph to a dialog moving box.
+
+[33mcommit 9d87e4e3b099498a1c31d02afec92be78b190fb7[m
+Author: Kaelan <85350238+pandalords@users.noreply.github.com>
+Date:   Mon Sep 26 17:24:45 2022 +1000
+
+    Added and fully created the Unity Heart Rate Graph
+    
+    Added a unity heart rate graph, this takes a blue tooth ID, BPM and confidence and can display it on a scaleable movable graph. Can take as many inputs as needed.
+
+[33mcommit a77394f2cce55b7c0bedb1fe29dac367c7dd541d[m
+Author: Your Name <indegamedev@gmail.com>
+Date:   Sun Sep 25 16:56:53 2022 +1000
+
+    initial patient selection gui
+
+[33mcommit 2ae8d41667fd75fd41d90b6a75793e9abac699f1[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Wed Sep 21 13:07:37 2022 +1000
+
+    Revert "Create NotificationManager.cs"
+    
+    This reverts commit ca89d4f4525ad6ed89b573eaab3d867e1c50aa66.
+
+[33mcommit a588a44de7e14442d49857a0bf291ceb489215b0[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Wed Sep 21 13:07:32 2022 +1000
+
+    Revert "Delete NotificationManager.cs"
+    
+    This reverts commit 1f786027258cf190195d79517e66bd43a0097e85.
+
+[33mcommit 10136400f47a7c34942bd341381d1415de31f74e[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Wed Sep 21 13:07:11 2022 +1000
+
+    Revert "Add files via upload"
+    
+    This reverts commit c55d72f5a9063c009efd6d50b44b6cbeac5c9392.
+
+[33mcommit c55d72f5a9063c009efd6d50b44b6cbeac5c9392[m
+Author: mirandawoelke27 <mwoelke27@gmail.com>
+Date:   Wed Sep 21 12:09:51 2022 +1000
+
+    Add files via upload
+
+[33mcommit 1f786027258cf190195d79517e66bd43a0097e85[m
+Author: mirandawoelke27 <mwoelke27@gmail.com>
+Date:   Wed Sep 21 12:09:22 2022 +1000
+
+    Delete NotificationManager.cs
+
+[33mcommit ca89d4f4525ad6ed89b573eaab3d867e1c50aa66[m
+Author: mirandawoelke27 <mwoelke27@gmail.com>
+Date:   Wed Sep 21 12:08:55 2022 +1000
+
+    Create NotificationManager.cs
+
+[33mcommit 911210747adb9cb2587a1efa757d3c27fb04f9ff[m
+Author: Aditha Doratiyawa <indegamedev@gmail.com>
+Date:   Fri Aug 26 13:18:27 2022 +1000
+
+    initial commit

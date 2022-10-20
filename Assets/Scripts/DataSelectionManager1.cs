@@ -17,6 +17,12 @@ namespace CFA_HUD
             DataActivation = dataActivation;
         }
     }
+
+
+
+
+
+
     public class DataSelectionManager1 : MonoBehaviour
     {
         public GameObject togglePrefab;
