@@ -22,7 +22,7 @@ namespace CFA_HUD
 
         private const int circleSize = 11;
         private const int DotCount = 15;
-        private readonly float yMinimum = 50f;
+       
         private readonly float xSize = 50f;
 
         private readonly Color32[] Colours = new[] { new Color32(255, 0, 0, 100), new Color32(0, 255, 0, 100), new Color32(0, 0, 255, 100), new Color32(0, 255, 255, 100) };
@@ -133,13 +133,14 @@ namespace CFA_HUD
             {
                 float confidence = checkedData[i].Data.Confidence;
                 
-
+                
+                
                 float xPosition = (checkedData.Count - i) * xSize;
-                float yPosition = checkedData[i].Data.Value + yMinimum;
+                float yPosition = (checkedData[i].Data.Value*100)/(graph.Ymax)/100*240+47; //factor of y max
 
-                if (yPosition >= graph.Ymax)
+                if (yPosition >= 350)
                 {
-                    yPosition = graph.Ymax;
+                    yPosition = 350;
                     maxHeight = true;
 
                 }
