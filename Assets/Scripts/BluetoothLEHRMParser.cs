@@ -67,7 +67,8 @@ namespace CFA_HUD
     public class BluetoothLEHRMParser : MonoBehaviour
     {
 
-        const string API_URL = "http://20.211.90.206:8080";
+        //const string API_URL = "http://20.211.90.206:8080";
+        const string API_URL = "http://localhost:8080";
 
         public TMP_Text debugText;
 
@@ -108,6 +109,20 @@ namespace CFA_HUD
         {
             apiClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CFA_HUD", "0.1"));
 
+            var username = PlayerPrefs.GetString("username");
+            var pwdHash = PlayerPrefs.GetString("password");
+
+            if (username != null && pwdHash != null)
+            {
+                var authenticationString = $"{username}:{pwdHash}";
+
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
+
+                Debug.Log(base64EncodedAuthenticationString);
+                apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
+
+            }
+
 
 #if ENABLE_WINMD_SUPPORT
             bleWatcher = new BluetoothLEAdvertisementWatcher();
@@ -140,13 +155,15 @@ namespace CFA_HUD
         {
             Debug.Log("Testing API...");
 
+
+
             var response = await apiClient.GetAsync($"status");
+
+
 
             Debug.Log($"API reports {response.StatusCode}");
 
             dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
-
-
 
         }
 
@@ -282,7 +299,29 @@ namespace CFA_HUD
         {
             return ServiceIDList;
         }
-                
+
+        public void SetNewLoginDetails(string username, string password)
+        {
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(password);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+
+                PlayerPrefs.SetString("username", username);
+                PlayerPrefs.SetString("password", hash);
+
+                var authenticationString = $"{username}:{hash}";
+
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
+
+                Debug.Log(base64EncodedAuthenticationString);
+                apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
+            }
+        }
+
     }
-    }
+}
 
