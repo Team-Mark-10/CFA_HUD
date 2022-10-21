@@ -35,11 +35,12 @@ namespace CFA_HUD
         [SerializeField]
         private Sprite upSprite;
 
-        
-        public GameObject parserGO;
 
-        
-        public GameObject selectorGO;
+        [SerializeField]
+        private GameObject parserGO;
+
+        [SerializeField]
+        private GameObject selectorGO;
 
         private readonly List<GameObject> chartObjectList = new();
 
@@ -64,10 +65,14 @@ namespace CFA_HUD
         private void Start()
         {
             var parser = parserGO.GetComponent<BluetoothLEHRMParser>();
+
             parser.AdvertisementReceived += OnAdvertisementReceived;
 
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
             selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
+
+          
+
 
         }
 
@@ -200,6 +205,8 @@ namespace CFA_HUD
 
                 gameObject.GetComponent<Image>().sprite = upSprite;
             }
+
+
 
 
 
