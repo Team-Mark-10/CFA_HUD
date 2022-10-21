@@ -10,18 +10,19 @@ namespace CFA_HUD
     public class WindowGraph : MonoBehaviour
     {
         public List<string> FilterIds { get; } = new();
-        public string ServiceId { get => serviceId; private set => serviceId = value; }
-        public string Title { get => title; set => title = value; }
 
-        [SerializeField]
-        private string title;
+
+
+    
+        public string ServiceId { get => serviceId; set => serviceId = value; }
+     
 
         [SerializeField]
         private string serviceId;
 
         private const int circleSize = 11;
         private const int DotCount = 15;
-        private readonly float yMinimum = 50f;
+       
         private readonly float xSize = 50f;
 
         private readonly Color32[] Colours = new[] { new Color32(255, 0, 0, 100), new Color32(0, 255, 0, 100), new Color32(0, 0, 255, 100), new Color32(0, 255, 255, 100) };
@@ -32,10 +33,13 @@ namespace CFA_HUD
         private Sprite deadSprite;
 
         [SerializeField]
-        private GameObject parserGO;
+        private Sprite upSprite;
 
-        [SerializeField]
-        private GameObject selectorGO;
+        
+        public GameObject parserGO;
+
+        
+        public GameObject selectorGO;
 
         private readonly List<GameObject> chartObjectList = new();
 
@@ -60,26 +64,41 @@ namespace CFA_HUD
         private void Start()
         {
             var parser = parserGO.GetComponent<BluetoothLEHRMParser>();
-
             parser.AdvertisementReceived += OnAdvertisementReceived;
 
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
             selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
-
-            transform.Find("TitleText").GetComponent<TMP_Text>().text = title;
-
 
         }
 
         private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
         {
             var data = e.Advertisement.GetContinuousDataFromService(serviceId);
-            if(data != null)
+            if (data != null)
             {
                 AddEntry(e.Advertisement.Patient.Advertiser.Address.ToString(), data);
             }
 
-            
+
+        }
+
+        private GraphData SelectGraphType(string ID) {
+            //Takes a ID and applies a swtich statement based of prehardcoded ids
+            //This returns a MAX and MIN Y , a scale name and a graph name
+            switch (ID)
+            {
+                case "0D-18":
+                    return new GraphData(ID, "Heart Rate", "BPM", 280, 0);
+                case "13-27":
+                    return new GraphData(ID, "Accelerometer", "M/s", 3, 0);
+                case "3":
+                    return new GraphData(ID, "Sleep", "Hours", 240, 0);
+                case "4":
+                    return new GraphData(ID, "Temperture", "*C", 240, 0);
+                default:
+                    Debug.Log("Unknown Blueooth ID.");
+                    return new GraphData(ID, "Unknown", "", 300, 0);
+            }
         }
 
         private void OnPatientSelectionUpdated(object sender, PatientSelectionUpdatedEventArgs e)
@@ -101,17 +120,28 @@ namespace CFA_HUD
         /// </summary>
         /// <param name="patientBPMData">List of BPM data</param>
         /// <param name="colour">The colour of the line to be drawn</param>
-        private void RenderLine(int lineIndex, List<CheckedContinuousData> checkedData, Color32 colour)
+        private void RenderLine(int lineIndex, List<CheckedContinuousData> checkedData, Color32 colour, GraphData graph)
         {
+           bool maxHeight = false;
             GameObject lastCircleGameObject = null;
             for (int i = 0; i < checkedData.Count; i++)
             {
                 float confidence = checkedData[i].Data.Confidence;
+                
+                
+                
                 float xPosition = (checkedData.Count - i) * xSize;
-                float yPosition = checkedData[i].Data.Value + yMinimum;
+                float yPosition = (checkedData[i].Data.Value*100)/(graph.Ymax)/100*240+47; //factor of y max
+
+                if (yPosition >= 350)
+                {
+                    yPosition = 350;
+                    maxHeight = true;
+
+                }
 
                 GameObject circleGameObject =
-                    CreateCircle(new Vector2(xPosition, yPosition), colour, checkedData[i].IsAssumed);
+                    CreateCircle(new Vector2(xPosition, yPosition), colour, checkedData[i].IsAssumed, maxHeight);
 
                 chartObjectList.Add(circleGameObject);
 
@@ -147,11 +177,12 @@ namespace CFA_HUD
         /// <param name="anchoredPosition"></param>
         /// <param name="colour"></param>
         /// <returns></returns>
-        private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool isAssumed)
+        private GameObject CreateCircle(Vector2 anchoredPosition, Color32 colour, bool isAssumed, bool height)
         {
             GameObject gameObject = new("circle", typeof(Image));
 
             gameObject.transform.SetParent(graphContainer, false);
+         
             if (isAssumed)
             {
                 gameObject.GetComponent<Image>().sprite = deadSprite;
@@ -162,6 +193,14 @@ namespace CFA_HUD
                 gameObject.GetComponent<Image>().sprite = circleSprite;
 
             }
+
+            if (height)
+
+            {
+
+                gameObject.GetComponent<Image>().sprite = upSprite;
+            }
+
 
 
             RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
@@ -240,12 +279,57 @@ namespace CFA_HUD
             text.font = valueTextFont;
             text.fontSize = 24;
             text.color = colour;
-
+            value = (int)Math.Round(value, 0);
             valueTextGameObject.GetComponent<UnityEngine.UI.Text>().text = value.ToString();
 
             return valueTextGameObject;
         }
+        private GameObject CreateMenuText(string name)
+        {
+            GameObject menuTextObject = new("MenuText", typeof(Text));
+            menuTextObject.transform.SetParent(graphContainer, false);
+            RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new(375, 150);
+            rectTransform.sizeDelta = new(250, 400);
+            rectTransform.anchorMin = new(0, 0);
+            rectTransform.anchorMax = new(0, 0);
 
+            Text text = menuTextObject.GetComponent<Text>();
+            text.font = valueTextFont;
+            text.fontSize = 35;
+            menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
+
+
+
+            return menuTextObject;
+        }
+
+        private GameObject CreateYAxisLabel(string name, int pos, float number, bool decimals) {
+
+            GameObject YAxisLabel = new("YAxisLabel", typeof(Text));
+            YAxisLabel.transform.SetParent(graphContainer, false);
+            RectTransform rectTransform = YAxisLabel.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new(20, pos + 40);
+            rectTransform.sizeDelta = new(80, 40);
+            rectTransform.anchorMin = new(0, 0);
+            rectTransform.anchorMax = new(0, 0);
+
+            Text text = YAxisLabel.GetComponent<Text>();
+            text.font = valueTextFont;
+            text.fontSize = 14;
+
+            if (decimals) {
+                number = (int)Math.Round(number, 0);
+            } else {
+                number = (float)Math.Round(number, 2);
+            }
+
+            YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " + number);
+
+            return YAxisLabel;
+
+
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -273,12 +357,41 @@ namespace CFA_HUD
 
             Latest.Clear();
 
+
+
+
+            //Menu text to be taken from graphdata
+            GraphData GraphData = SelectGraphType(serviceId);
+            Debug.Log(serviceId);
+
+            GameObject MenuText = CreateMenuText(GraphData.Title);
+            chartObjectList.Add(MenuText);
+
+            //Generates Yaxis labels based off y 
+            int i;
+            float number = GraphData.Ymax / 6;  //6 being the amount of y axis labels to be populated.
+            for (i = 0; i < 7; i++) {
+
+                //In the event that number is less then 7, this processes it as a float later on.
+                if (number > 7) {
+                    GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i * 40, number * i, true);
+                    chartObjectList.Add(YAxisLabel);
+                } else
+                {
+                    GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i * 40, number * i, false);
+                    chartObjectList.Add(YAxisLabel);
+                }
+
+            }
+
+
+            //Run only for revelant ID's
             int index = 0;
             foreach (string key in Lines.Keys)
             {
                 if (!FilterIds.Contains(key))
                 {
-                    RenderLine(index, Lines[key].ToList(), GetColour(index));
+                    RenderLine(index, Lines[key].ToList(), GetColour(index), GraphData);
                 }
                 index++;
 
@@ -313,15 +426,19 @@ namespace CFA_HUD
         /// <param name="entry"></param>
         public void AddEntry(string id, ContinuousData entry)
         {
-            if (Latest.ContainsKey(id))
+            if (entry.ServiceId == serviceId)
             {
-                Latest[id] = entry;
+                if (Latest.ContainsKey(id))
+                {
+                    Latest[id] = entry;
 
+                }
+                else
+                {
+                    Latest.Add(id, entry);
+                }
             }
-            else
-            {
-                Latest.Add(id, entry);
-            }
+
         }
 
         /// <summary>
@@ -329,7 +446,7 @@ namespace CFA_HUD
         /// </summary>
         /// <param name="id"></param>
         /// <param name="entry"></param>
-        public void AppendLineEntry(string id, CheckedContinuousData entry)
+        private void AppendLineEntry(string id, CheckedContinuousData entry)
         {
             //Attemtps to add a value to the hashmap using the ID., Skips this step if it already exists.
             if (Lines.ContainsKey(id))
@@ -366,5 +483,25 @@ namespace CFA_HUD
             IsAssumed = isAssumed;
         }
     }
+    public class GraphData
+    {
 
+        public string BluetoothID { get; set; }
+        public string Title { get; set; }
+
+        public string AxisLabel { get; set; }
+
+        public int Ymin { get; set; }
+
+        public float Ymax { get; set; }
+        public GraphData(string bluetoothID, string title, string axisLabel, float ymax, int ymin)
+        {
+            BluetoothID = bluetoothID;
+            Title = title;
+            AxisLabel = axisLabel;
+            Ymax = ymax;
+            Ymin = ymin;
+        }
+    
+    }
 }

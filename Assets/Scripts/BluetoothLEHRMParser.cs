@@ -43,6 +43,17 @@ namespace CFA_HUD
         public Patient Patient { get; private set; }
     }
 
+    public class NewServiceIDEventArgs : EventArgs
+    { 
+        public string Data { set; get; }
+    
+        public NewServiceIDEventArgs(string data)
+        {
+            Data = data;
+        }
+
+    }
+
     public class AdvertisementReceivedEventArgs : EventArgs
     {
         public CFAAdvertisementDetails Advertisement { get; }
@@ -56,7 +67,8 @@ namespace CFA_HUD
     public class BluetoothLEHRMParser : MonoBehaviour
     {
 
-        const string API_URL = "http://20.211.90.206:8080";
+        //const string API_URL = "http://20.211.90.206:8080";
+        const string API_URL = "http://localhost:8080";
 
         public TMP_Text debugText;
 
@@ -69,6 +81,8 @@ namespace CFA_HUD
         public event EventHandler<PatientAddedEventArgs> AdvertiserAdded;
         public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
 
+        public event EventHandler<NewServiceIDEventArgs> NewServiceIDReceived;
+
         private readonly List<CFAAdvertisementDetails> Advertisements = new();
         private readonly List<CFAAdvertisementDetails> UploadCache = new();
 
@@ -78,16 +92,36 @@ namespace CFA_HUD
 
         private bool dbConnectionActive = false;
 
+        public List<string> ServiceIDList = new List<string>();
+
+
         protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
         {
             var handler = AdvertisementReceived;
             handler?.Invoke(this, e);
+
+
+
         }
 
         // Start is called before the first frame update
         void Start()
         {
             apiClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CFA_HUD", "0.1"));
+
+            var username = PlayerPrefs.GetString("username");
+            var pwdHash = PlayerPrefs.GetString("password");
+
+            if (username != null && pwdHash != null)
+            {
+                var authenticationString = $"{username}:{pwdHash}";
+
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
+
+                Debug.Log(base64EncodedAuthenticationString);
+                apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
+
+            }
 
 
 #if ENABLE_WINMD_SUPPORT
@@ -111,7 +145,7 @@ namespace CFA_HUD
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
 
-            AddAdvertiserAsPatient(new BLEAdvertiser(2, "asdf"), null);
+            AddAdvertiserAsPatient(new BLEAdvertiser(2, "Test Patient"), null);
         }
 
         /**
@@ -121,11 +155,16 @@ namespace CFA_HUD
         {
             Debug.Log("Testing API...");
 
+
+
             var response = await apiClient.GetAsync($"status");
+
+
 
             Debug.Log($"API reports {response.StatusCode}");
 
             dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
+
         }
 
         async Task<bool> SyncWithDB()
@@ -169,6 +208,8 @@ namespace CFA_HUD
         /***
          * Generates and tracks a patient from a given bluetooth advertiser.
          */
+
+
         private Patient AddAdvertiserAsPatient(BLEAdvertiser advertiser, string alias)
         {
             if (alias == null)
@@ -176,7 +217,7 @@ namespace CFA_HUD
                 alias = $"Patient {Patients.Count + 1}";
             }
 
-            Patient newPatient = new(alias, advertiser, null);
+            Patient newPatient = new(alias, advertiser);
             Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
 
             Patients.Add(newPatient);
@@ -184,6 +225,7 @@ namespace CFA_HUD
 
             return newPatient;
         }
+
 
         /***
          * Finds a patient from the tracked patients list with the given bluetooth address.
@@ -199,6 +241,8 @@ namespace CFA_HUD
             }
             return null;
         }
+
+
 
 #if ENABLE_WINMD_SUPPORT
       
@@ -221,11 +265,28 @@ namespace CFA_HUD
                  patient = AddAdvertiserAsPatient(advertiser, null);
             }
             
+
             CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
+            
+            foreach (var data in details.ContinuousData)
+             {
+      
+                if (!(ServiceIDList.Contains(data.ServiceId)))
+                {
+                 ServiceIDList.Add(data.ServiceId);
+                 NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(data.ServiceId));
+                }
+
+             }
+        
+
             Advertisements.Add(details);
             UploadCache.Add(details);
 
             OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
+            
+            //NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs("sdfasdf"));
+           
         }
 
 #endif
@@ -233,5 +294,34 @@ namespace CFA_HUD
         {
             return Patients;
         }
+
+        public List<string> GetServiceIDs()
+        {
+            return ServiceIDList;
+        }
+
+        public void SetNewLoginDetails(string username, string password)
+        {
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(password);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+
+                PlayerPrefs.SetString("username", username);
+                PlayerPrefs.SetString("password", hash);
+
+                var authenticationString = $"{username}:{hash}";
+
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
+
+                Debug.Log(base64EncodedAuthenticationString);
+                apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
+            }
+        }
+
     }
 }
+
