@@ -5,10 +5,14 @@ using UnityEngine;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 public class AuthSlate : MonoBehaviour
 {
+    private const string ERROR_MSG = "Invalid url";
     public BluetoothLEHRMParser parser;
 
+    public MRTKUGUIInputField apiField;
     public MRTKUGUIInputField username;
     public MRTKUGUIInputField password;
+
+    public TMPro.TMP_Text errorText;
 
     // Start is called before the first frame update
     void Start()
@@ -26,9 +30,25 @@ public class AuthSlate : MonoBehaviour
 
     public void OnSubmitAuth()
     {
-        if (username.text.Length > 0 && password.text.Length > 0)
+        errorText.text = "";
+
+        var valid = true;
+        if (apiField.text.Length > 0)
         {
-            parser.SetNewLoginDetails(username.text, password.text);
+            valid = parser.SetAPIAddress(apiField.text);
         }
+
+        if (!valid)
+        {
+            errorText.text = ERROR_MSG;
+
+        } else
+        {
+            if (username.text.Length > 0 && password.text.Length > 0)
+            {
+                parser.SetNewLoginDetails(username.text, password.text);
+            }
+        }
+       
     }
 }
