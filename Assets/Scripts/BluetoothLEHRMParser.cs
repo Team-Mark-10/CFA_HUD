@@ -112,6 +112,10 @@ namespace CFA_HUD
             var username = PlayerPrefs.GetString("username");
             var pwdHash = PlayerPrefs.GetString("password");
 
+            var apiUrl = PlayerPrefs.GetString("apiUrl");
+
+            apiClient.BaseAddress = new Uri(apiUrl);
+
             if (username != null && pwdHash != null)
             {
                 var authenticationString = $"{username}:{pwdHash}";
@@ -155,21 +159,15 @@ namespace CFA_HUD
         {
             Debug.Log("Testing API...");
 
-
-
             var response = await apiClient.GetAsync($"status");
-
-
 
             Debug.Log($"API reports {response.StatusCode}");
 
             dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
-
         }
 
         async Task<bool> SyncWithDB()
-        {
-
+        { 
             if (dbConnectionActive && UploadCache.Count > 0)
             {
                 var cacheShallowCopy = new List<CFAAdvertisementDetails>(UploadCache);
@@ -178,7 +176,6 @@ namespace CFA_HUD
                 if (await PostReadings(cacheShallowCopy))
                 {
                     return true;
-
                 }
                 else
                 {
@@ -192,7 +189,6 @@ namespace CFA_HUD
                 await TestDBConnection();
                 return false;
             }
-
         }
 
         async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements)
@@ -208,8 +204,6 @@ namespace CFA_HUD
         /***
          * Generates and tracks a patient from a given bluetooth advertiser.
          */
-
-
         private Patient AddAdvertiserAsPatient(BLEAdvertiser advertiser, string alias)
         {
             if (alias == null)
@@ -225,7 +219,6 @@ namespace CFA_HUD
 
             return newPatient;
         }
-
 
         /***
          * Finds a patient from the tracked patients list with the given bluetooth address.
@@ -322,6 +315,20 @@ namespace CFA_HUD
             }
         }
 
+        public bool SetAPIAddress(string text)
+        {
+
+            try
+            {
+                new Uri(text);
+            }catch (Exception e)
+            {
+                Debug.Log("invalid uri");
+                return false;
+            }
+            PlayerPrefs.SetString("apiUrl", text);
+            return true;
+        }
     }
 }
 
