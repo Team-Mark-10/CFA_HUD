@@ -72,6 +72,11 @@ namespace CFA_HUD
             wg.ServiceId = data;
             wg.parserGO = parser.gameObject;
 
+            var nt = newToggle.GetComponent<ServiceIdToggle>();
+            nt.ServiceGraph = newInstanceBackplate;
+            nt.ServiceID = data;
+
+
             var scrollObject = toggleParent.GetComponentInParent<ScrollingObjectCollection>();
 
             scrollObject.GetComponentInChildren<ClippingBox>().enabled = true;

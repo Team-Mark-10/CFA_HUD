@@ -103,9 +103,6 @@ namespace CFA_HUD
 
         }
 
-
-
-
         // Start is called before the first frame update
         void Start()
         {
@@ -133,7 +130,7 @@ namespace CFA_HUD
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
 
-            AddAdvertiserAsPatient(new BLEAdvertiser(2, "asdf"), null);
+            AddAdvertiserAsPatient(new BLEAdvertiser(2, "Test Patient"), null);
         }
 
         /**
@@ -253,32 +250,25 @@ namespace CFA_HUD
             
 
             CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
-
-          
             
-            foreach (ContinuousData in details.ContinuousData)
+            foreach (var data in details.ContinuousData)
              {
       
-                if (!(ServiceIDList.Contains(ContinuousData.ServiceID)))
+                if (!(ServiceIDList.Contains(data.ServiceId)))
                 {
-                 ServiceIDList.add(ServiceID);
-                 NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(ServiceID));
+                 ServiceIDList.Add(data.ServiceId);
+                 NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(data.ServiceId));
                 }
 
              }
-         
-                
         
 
             Advertisements.Add(details);
             UploadCache.Add(details);
 
             OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
-
-
-
             
-            NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs("sdfasdf"));
+            //NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs("sdfasdf"));
            
         }
 

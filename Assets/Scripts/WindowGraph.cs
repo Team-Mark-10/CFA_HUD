@@ -69,9 +69,6 @@ namespace CFA_HUD
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
             selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
 
-          
-
-
         }
 
         private void OnAdvertisementReceived(object sender, AdvertisementReceivedEventArgs e)
