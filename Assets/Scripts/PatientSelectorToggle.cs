@@ -11,6 +11,8 @@ namespace CFA_HUD
         private Patient patient;
         public Patient Patient { get => patient; set => patient = value; }
 
+
+        public TMPro.TMP_Text nameText;
         public bool IsToggled
         {
             get { return GetComponent<Interactable>().IsToggled; }
@@ -31,7 +33,7 @@ namespace CFA_HUD
         // Start is called before the first frame update
         void Start()
         {
-            GetComponentInChildren<TextMesh>().text = Patient.Alias;
+            nameText.text = Patient.Alias;
         }
     }
 

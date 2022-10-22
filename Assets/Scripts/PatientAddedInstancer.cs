@@ -57,8 +57,12 @@ public class PatientAddedInstancer : MonoBehaviour
 
 
         yield return new WaitForEndOfFrame();
+        Debug.Log("Bang");
         parentObject.UpdateCollection();
-        parentObject.GetComponentInParent<ScrollingObjectCollection>().UpdateContent();
+        yield return new WaitForEndOfFrame();
+        Debug.Log("Boom");
+
+        //  parentObject.GetComponentInParent<ScrollingObjectCollection>().UpdateContent();
         cbox.enabled = false;
 
         Debug.Log("Object instantiated");

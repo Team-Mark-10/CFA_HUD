@@ -19,9 +19,6 @@ namespace CFA_HUD
     }
     public class PatientSelectionManager : PatientAddedInstancer
     {
-
-        private bool isOutputDirty = false;
-
         public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;
 
         protected virtual void OnPatientSelectionUpdated()
@@ -36,21 +33,6 @@ namespace CFA_HUD
             Debug.Log(activation.ToString());
 
             PatientSelectionUpdated.Invoke(this, new PatientSelectionUpdatedEventArgs(activation));
-
-            isOutputDirty = true;
-        }
-
-
-        // Update is called once per frame
-        public override void Update()
-        {
-            base.Update();
-
-            if (isOutputDirty)
-            {
-                UpdateText();
-                isOutputDirty = false;
-            }
         }
 
         protected override void AddNewGameObject(GameObject newInstance, Patient patient)
@@ -59,30 +41,8 @@ namespace CFA_HUD
 
             toggle.Patient = patient;
 
-            toggle.AddToggleSelectedListener(OnButtonToggle);
-            toggle.AddToggleDeselectedListener(OnButtonToggle);
-
-            UpdateText();
-
-        }
-
-        void OnButtonToggle()
-        {
-            Debug.Log("Button Toggled");
-            OnPatientSelectionUpdated();
-            isOutputDirty = true;
-        }
-
-        private void UpdateText()
-        {
-            string newText = "State: ";
-
-            foreach (var t in Interactables)
-            {
-                var toggle = t.GetComponent<PatientSelectorToggle>();
-                newText += $"{toggle.Patient.Alias} => {t.IsToggled}, ";
-            }
-
+            toggle.AddToggleSelectedListener(() => OnPatientSelectionUpdated());
+            toggle.AddToggleDeselectedListener(() => OnPatientSelectionUpdated());
         }
 
     }

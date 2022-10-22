@@ -114,7 +114,17 @@ namespace CFA_HUD
 
             var apiUrl = PlayerPrefs.GetString("apiUrl");
 
-            apiClient.BaseAddress = new Uri(apiUrl);
+            if(apiUrl != null)
+            {
+                try
+                {
+                    apiClient.BaseAddress = new Uri(apiUrl);
+                } catch (Exception e)
+                {
+                    apiClient.BaseAddress = new Uri(API_URL);
+                }
+            }
+
 
             if (username != null && pwdHash != null)
             {
@@ -149,7 +159,7 @@ namespace CFA_HUD
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
 
-            AddAdvertiserAsPatient(new BLEAdvertiser(2, "Test Patient"), null);
+            //AddAdvertiserAsPatient(new BLEAdvertiser(2, "Test Patient"), null);
         }
 
         /**
@@ -262,24 +272,20 @@ namespace CFA_HUD
             CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
             
             foreach (var data in details.ContinuousData)
-             {
-      
-                if (!(ServiceIDList.Contains(data.ServiceId)))
+            {
+                if (!ServiceIDList.Contains(data.ServiceId))
                 {
-                 ServiceIDList.Add(data.ServiceId);
-                 NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(data.ServiceId));
+                     ServiceIDList.Add(data.ServiceId);
+                     NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(data.ServiceId));
                 }
 
-             }
-        
+            }
 
             Advertisements.Add(details);
             UploadCache.Add(details);
 
             OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
-            
-            //NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs("sdfasdf"));
-           
+                       
         }
 
 #endif
