@@ -7,8 +7,15 @@ using Microsoft.MixedReality.Toolkit.UI;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using System;
 
+/// <summary>
+///  The script controlling the patient details viewer.
+/// </summary>
 public class PatientDetailsViewer : MonoBehaviour
 {
+    public Patient Patient { get; set; }
+    public bool IsEditing => isEditing;
+    private bool isEditing = false;
+
     public PatientButtonList buttonList;
     public PressableButtonHoloLens2 editButton;
 
@@ -18,11 +25,8 @@ public class PatientDetailsViewer : MonoBehaviour
     public GameObject viewer;
     public GameObject editor;
 
-    private bool isEditing = false;
-    public bool IsEditing => isEditing;
     public MRTKUGUIInputField newFieldNameInputField;
 
-    public Patient Patient { get; set; }
     // Start is called before the first frame update
     void Start()
     {
@@ -103,6 +107,9 @@ public class PatientDetailsViewer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Renders the arbitary data as a string on the slate.
+    /// </summary>
     private void RenderDetails()
     {
         nameText.text = Patient.Alias;
@@ -123,11 +130,6 @@ public class PatientDetailsViewer : MonoBehaviour
         Debug.Log(Patient.ToJSONFormat());
 
         detailsText.text = s.ToString();
-    }
-
-    public enum AddableArbitraryDataTypes
-    {
-        INT, FLOAT, BOOL, STRING, DATETIME
     }
 
     public void AddField(int type)
@@ -153,22 +155,13 @@ public class PatientDetailsViewer : MonoBehaviour
                     Patient.Data.Add(new ArbitraryStringValue(name, ""));
 
                     break;
-                case  4:
+                case 4:
                     Patient.Data.Add(new ArbitraryDateTimeValue(name, DateTime.Now));
-
                     break;
             }
 
-            
+            editor.GetComponent<ArbitraryDataManager>().RegenerateFields(Patient);
+
         }
-
-        editor.GetComponent<ArbitraryDataManager>().RegenerateFields(Patient);
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

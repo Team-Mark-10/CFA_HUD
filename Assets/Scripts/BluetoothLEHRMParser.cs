@@ -20,14 +20,6 @@ using Windows.Security.Cryptography;
 
 namespace CFA_HUD
 {
-    public class PatientAddedEventArgs : PatientBroadcastEventArgs
-    {
-        public PatientAddedEventArgs(Patient patient) : base(patient)
-        {
-        }
-    }
-
-
     public interface IPatientBroadcaster
     {
         public void AddListener(EventHandler<PatientBroadcastEventArgs> handler);
@@ -64,80 +56,67 @@ namespace CFA_HUD
         }
     }
 
+    /// <summary>
+    /// This script handles all the bluetooth interfacing with external devices.
+    /// </summary>
     public class BluetoothLEHRMParser : MonoBehaviour
     {
-
-        //const string API_URL = "http://20.211.90.206:8080";
-        const string API_URL = "http://localhost:8080";
-
-        public TMP_Text debugText;
+        /// <summary>
+        /// The default url to API for the HttpClient. This can be overriden through <see cref="SetAPIAddress(string)"/>
+        /// </summary>
+        const string DEFAULT_API_URL = "http://localhost:8080";
 
         [SerializeField]
         private float syncPeriod = 10f;
 
 #if ENABLE_WINMD_SUPPORT
-         private BluetoothLEAdvertisementWatcher bleWatcher;
+        private BluetoothLEAdvertisementWatcher bleWatcher;
 #endif
-        public event EventHandler<PatientAddedEventArgs> AdvertiserAdded;
+        public event EventHandler<PatientBroadcastEventArgs> AdvertiserAdded;
         public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
-
         public event EventHandler<NewServiceIDEventArgs> NewServiceIDReceived;
 
+        /// <summary>
+        /// All advertisements over the lifetime of the application.
+        /// </summary>
         private readonly List<CFAAdvertisementDetails> Advertisements = new();
+
+        /// <summary>
+        /// All advertisements awaiting upload to the DB through the API.
+        /// </summary>
         private readonly List<CFAAdvertisementDetails> UploadCache = new();
 
+        /// <summary>
+        /// The master list of patients in the application.
+        /// </summary>
         private readonly List<Patient> Patients = new();
 
-        private readonly HttpClient apiClient = new() { BaseAddress = new Uri(API_URL), Timeout = TimeSpan.FromSeconds(10) };
+        /// <summary>
+        /// The master list of service ID's encountered in the application.
+        /// </summary>
+        private readonly List<string> ServiceIDList = new ();
 
+
+        /// <summary>
+        /// The HttpClient used to connect to the CFA API.
+        /// </summary>
+        private readonly HttpClient apiClient = new() { BaseAddress = new Uri(DEFAULT_API_URL), Timeout = TimeSpan.FromSeconds(10),  };
+
+        /// <summary>
+        /// Whether a successful authenticated connection to the API was established.
+        /// </summary>
         private bool dbConnectionActive = false;
-
-        public List<string> ServiceIDList = new List<string>();
-
-
-        protected virtual void OnAdvertisementReceived(AdvertisementReceivedEventArgs e)
-        {
-            var handler = AdvertisementReceived;
-            handler?.Invoke(this, e);
-
-
-
-        }
 
         // Start is called before the first frame update
         void Start()
         {
-            apiClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CFA_HUD", "0.1"));
+            InitialiseApiClient();
 
-            var username = PlayerPrefs.GetString("username");
-            var pwdHash = PlayerPrefs.GetString("password");
+            SetupBluetoothWatcher();
+        }
 
-            var apiUrl = PlayerPrefs.GetString("apiUrl");
-
-            if(apiUrl != null)
-            {
-                try
-                {
-                    apiClient.BaseAddress = new Uri(apiUrl);
-                } catch (Exception e)
-                {
-                    apiClient.BaseAddress = new Uri(API_URL);
-                }
-            }
-
-
-            if (username != null && pwdHash != null)
-            {
-                var authenticationString = $"{username}:{pwdHash}";
-
-                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
-
-                Debug.Log(base64EncodedAuthenticationString);
-                apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
-
-            }
-
-
+        private void SetupBluetoothWatcher()
+        {
 #if ENABLE_WINMD_SUPPORT
             bleWatcher = new BluetoothLEAdvertisementWatcher();
 
@@ -151,21 +130,55 @@ namespace CFA_HUD
             manufacturerData.Data = writer.DetachBuffer();
 
             bleWatcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
+            bleWatcher.Received += OnAdvertisementRecieved;
 
-            StartBleDeviceWatcher();
+            bleWatcher.Start();
 
 #endif
+        }
+
+        private void InitialiseApiClient()
+        {
+            apiClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CFA_HUD", "0.1"));
+
+            // Load username and password set in previous runs of the application.
+            var username = PlayerPrefs.GetString("username");
+            var pwdHash = PlayerPrefs.GetString("password");
+            var apiUrl = PlayerPrefs.GetString("apiUrl");
+
+            if (apiUrl != null)
+            {
+                try
+                {
+                    apiClient.BaseAddress = new Uri(apiUrl);
+                }
+                catch 
+                {
+                    apiClient.BaseAddress = new Uri(DEFAULT_API_URL);
+                }
+            }
+
+            // Sets up the Authorization header for the api client.
+            if (username != null && pwdHash != null)
+            {
+                var authenticationString = $"{username}:{pwdHash}";
+
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
+
+                Debug.Log(base64EncodedAuthenticationString);
+                apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
+
+            }
+
             TestDBConnection();
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
-
-            //AddAdvertiserAsPatient(new BLEAdvertiser(2, "Test Patient"), null);
         }
 
         /**
          * Calls the API and sees if it is active. 
          **/
-        async Task TestDBConnection()
+        private async Task TestDBConnection()
         {
             Debug.Log("Testing API...");
 
@@ -176,7 +189,11 @@ namespace CFA_HUD
             dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
         }
 
-        async Task<bool> SyncWithDB()
+        /// <summary>
+        /// Uploads the advertisements in the upload cache to the DB and removes them if successful.
+        /// </summary>
+        /// <returns></returns>
+        private async Task<bool> SyncWithDB()
         { 
             if (dbConnectionActive && UploadCache.Count > 0)
             {
@@ -201,7 +218,12 @@ namespace CFA_HUD
             }
         }
 
-        async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements)
+        /// <summary>
+        /// Post a list of readings to the DB through the API.
+        /// </summary>
+        /// <param name="advertisements"></param>
+        /// <returns></returns>
+        private async Task<bool> PostReadings(List<CFAAdvertisementDetails> advertisements)
         {
             var jsonObject = $"{{ \"readings\": [{string.Join(",", advertisements.Select(x => x.ToJSONFormat()))}] }}";
 
@@ -211,9 +233,12 @@ namespace CFA_HUD
             return response.StatusCode == System.Net.HttpStatusCode.OK;
         }
 
-        /***
-         * Generates and tracks a patient from a given bluetooth advertiser.
-         */
+        /// <summary>
+        /// Generates and tracks a patient from a given bluetooth advertiser.
+        /// </summary>
+        /// <param name="advertiser">The advertiser to be associated with the Patient</param>
+        /// <param name="alias">A human readable name for the patient</param>
+        /// <returns></returns>
         private Patient AddAdvertiserAsPatient(BLEAdvertiser advertiser, string alias)
         {
             if (alias == null)
@@ -225,14 +250,16 @@ namespace CFA_HUD
             Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
 
             Patients.Add(newPatient);
-            AdvertiserAdded.Invoke(this, new PatientAddedEventArgs(newPatient));
+            AdvertiserAdded.Invoke(this, new PatientBroadcastEventArgs(newPatient));
 
             return newPatient;
         }
 
-        /***
-         * Finds a patient from the tracked patients list with the given bluetooth address.
-         */
+        /// <summary>
+        /// Finds a patient from the tracked patients list with the given bluetooth address.
+        /// </summary>
+        /// <param name="address"></param>
+        /// <returns></returns>
         private Patient FindPatient(ulong address)
         {
             for (int i = 0; i < Patients.Count; i++)
@@ -245,32 +272,25 @@ namespace CFA_HUD
             return null;
         }
 
-
-
 #if ENABLE_WINMD_SUPPORT
-      
-        private void StartBleDeviceWatcher()
-        {
-        
-            bleWatcher.Received += OnAdvertisementRecieved;
-
-            bleWatcher.Start();
-            debugText.text = "Starting Heart Rate Listener";
-        }
-
+       /// <summary>
+       /// Handles an incoming bluetooth advertisement from an external bluetooth device.
+       /// </summary>
         private void OnAdvertisementRecieved(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs args)
         {
-            Patient patient = FindPatient(args.BluetoothAddress);
+            Patient existingPatient = FindPatient(args.BluetoothAddress);
 
-            if (patient == null)
+            // Adds a new patient instance for a new device.
+            if (existingPatient == null)
             {
                 var advertiser = new BLEAdvertiser(args.BluetoothAddress, args.Advertisement.LocalName);
-                 patient = AddAdvertiserAsPatient(advertiser, null);
+                existingPatient = AddAdvertiserAsPatient(advertiser, null);
             }
             
 
-            CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, patient);
+            CFAAdvertisementDetails details = new CFAAdvertisementDetails(args, existingPatient);
             
+            // Checks if there are any new data types.
             foreach (var data in details.ContinuousData)
             {
                 if (!ServiceIDList.Contains(data.ServiceId))
@@ -284,10 +304,8 @@ namespace CFA_HUD
             Advertisements.Add(details);
             UploadCache.Add(details);
 
-            OnAdvertisementReceived(new AdvertisementReceivedEventArgs(details));
-                       
+            AdvertisementReceived?.Invoke(this, new AdvertisementReceivedEventArgs(details));
         }
-
 #endif
         public List<Patient> GetPatients()
         {
@@ -299,6 +317,11 @@ namespace CFA_HUD
             return ServiceIDList;
         }
 
+        /// <summary>
+        /// Saves a new username and password (hashed) to local storage for use with the API. Persists through launches of the application.
+        /// </summary>
+        /// <param name="username">The new username.</param>
+        /// <param name="password">The new password string.</param>
         public void SetNewLoginDetails(string username, string password)
         {
             // Use input string to calculate MD5 hash
@@ -314,24 +337,28 @@ namespace CFA_HUD
 
                 var authenticationString = $"{username}:{hash}";
 
+                // Basic HTTP Authorization is encoded in Base64
                 var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
-
-                Debug.Log(base64EncodedAuthenticationString);
                 apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
             }
         }
 
+        /// <summary>
+        /// Attempts to set the API address.
+        /// </summary>
+        /// <param name="text">The new API candidate</param>
+        /// <returns>If the new API was valid.</returns>
         public bool SetAPIAddress(string text)
         {
-
             try
             {
                 new Uri(text);
-            }catch (Exception e)
+            }catch
             {
-                Debug.Log("invalid uri");
+                Debug.Log("Invalid URI was specified.");
                 return false;
             }
+
             PlayerPrefs.SetString("apiUrl", text);
             return true;
         }

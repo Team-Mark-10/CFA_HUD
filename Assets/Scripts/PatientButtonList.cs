@@ -5,7 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/// <summary>
+/// Represents a list of patient buttons.
+/// </summary>
 public class PatientButtonList : PatientAddedInstancer, IPatientBroadcaster
 {
     public event EventHandler<PatientBroadcastEventArgs> PatientPressed;

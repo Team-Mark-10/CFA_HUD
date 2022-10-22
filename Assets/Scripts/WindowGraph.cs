@@ -10,10 +10,6 @@ namespace CFA_HUD
     public class WindowGraph : MonoBehaviour
     {
         public List<string> FilterIds { get; } = new();
-
-
-
-    
         public string ServiceId { get => serviceId; set => serviceId = value; }
      
 
@@ -284,7 +280,7 @@ namespace CFA_HUD
 
             return valueTextGameObject;
         }
-        private GameObject CreateMenuText(string name)
+        private GameObject CreateTitleText(string name)
         {
             GameObject menuTextObject = new("MenuText", typeof(Text));
             menuTextObject.transform.SetParent(graphContainer, false);
@@ -298,8 +294,6 @@ namespace CFA_HUD
             text.font = valueTextFont;
             text.fontSize = 35;
             menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
-
-
 
             return menuTextObject;
         }
@@ -331,7 +325,7 @@ namespace CFA_HUD
 
         }
         /// <summary>
-        /// 
+        /// Generates a new chart state
         /// </summary>
         private void GenerateChart()
         {
@@ -364,7 +358,7 @@ namespace CFA_HUD
             GraphData GraphData = SelectGraphType(serviceId);
             Debug.Log(serviceId);
 
-            GameObject MenuText = CreateMenuText(GraphData.Title);
+            GameObject MenuText = CreateTitleText(GraphData.Title);
             chartObjectList.Add(MenuText);
 
             //Generates Yaxis labels based off y 
@@ -471,7 +465,9 @@ namespace CFA_HUD
             return Colours[index % Colours.Length];
         }
     }
-
+    /// <summary>
+    /// A wrapper for <see cref="ContinuousData"/> regarding whether this graphed value was an assumption or not.
+    /// </summary>
     public class CheckedContinuousData
     {
         public ContinuousData Data { get; }
@@ -483,6 +479,9 @@ namespace CFA_HUD
             IsAssumed = isAssumed;
         }
     }
+    /// <summary>
+    /// A data type to configure the details of the graph.
+    /// </summary>
     public class GraphData
     {
 

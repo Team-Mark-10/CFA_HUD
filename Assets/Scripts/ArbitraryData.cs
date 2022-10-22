@@ -21,12 +21,29 @@ namespace CFA_HUD
     /// </summary>
     public interface IArbitraryData : IJSONSerializable
     {
+        /// <summary>
+        /// Gets the name of the field.
+        /// </summary>
+        /// <returns></returns>
         public string GetName();
 
+        /// <summary>
+        /// Is this a default field or a one custom set by the user.
+        /// </summary>
+        /// <returns></returns>
         public bool IsUserSet();
 
+        /// <summary>
+        /// Attempts to set the value of the arbitrary data. Applies validation.
+        /// </summary>
+        /// <param name="value">The string to try parse</param>
+        /// <returns>Whether the string was successfully parsed or not</returns>
         public bool TrySetValue(string value);
 
+        /// <summary>
+        /// Returns that data is a UI friendly format.
+        /// </summary>
+        /// <returns></returns>
         public string ToDisplayFormat();
     }
 
@@ -48,7 +65,11 @@ namespace CFA_HUD
         /// </summary>
         public T Value { get; set; }
 
-        public bool IsUserSet { get; protected set; } = false;
+        /// <summary>
+        /// If this is a default field or a one custom set by the user.
+        /// </summary>
+        /// <returns></returns>
+        protected bool isUserSet = false;
 
         /// <summary>
         /// Constructs a new ArbitraryData Object. 
@@ -68,7 +89,7 @@ namespace CFA_HUD
         {
             Name = name;
             Value = value;
-            IsUserSet = isUserSet;
+            this.isUserSet = isUserSet;
         }
 
         /// <summary>
@@ -95,9 +116,9 @@ namespace CFA_HUD
             return Name;
         }
 
-        bool IArbitraryData.IsUserSet()
+        public bool IsUserSet()
         {
-            return IsUserSet;
+            return isUserSet;
         }
     }
 
@@ -121,7 +142,7 @@ namespace CFA_HUD
             var success = int.TryParse(value, out int newValue);
             Value = newValue;
 
-            IsUserSet = true;
+            isUserSet = true;
 
             return success;
         }
@@ -146,7 +167,7 @@ namespace CFA_HUD
             var success = float.TryParse(value, out float newValue);
             Value = newValue;
 
-            IsUserSet = true;
+            isUserSet = true;
 
 
             return success;
@@ -206,7 +227,7 @@ namespace CFA_HUD
         {
             Value = value;
 
-            IsUserSet = true;
+            isUserSet = true;
 
             return true;
         }
@@ -231,7 +252,7 @@ namespace CFA_HUD
             var success = DateTime.TryParse(value, out DateTime newValue);
             Value = newValue;
 
-            IsUserSet = true;
+            isUserSet = true;
 
             return success;
         }

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+
+
 namespace CFA_HUD
 {
     public class PatientSelectionUpdatedEventArgs : EventArgs
@@ -17,6 +19,10 @@ namespace CFA_HUD
             PatientActivation = patientActivation;
         }
     }
+    
+    /// <summary>
+    /// A script for the selection of patients on the admin slate. This controls which lines are visible on the graphs.
+    /// </summary>
     public class PatientSelectionManager : PatientAddedInstancer
     {
         public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;

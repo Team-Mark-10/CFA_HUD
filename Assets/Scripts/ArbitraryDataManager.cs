@@ -8,17 +8,25 @@ using UnityEngine;
 
 namespace CFA_HUD
 {
+    /// <summary>
+    /// A script that manages the editing of a patient's arbitrary data.
+    /// </summary>
     public class ArbitraryDataManager : MonoBehaviour
     {
+        /// <summary>
+        /// The prefab representing a data field. Must have a top-level ArbitraryInputField component.
+        /// </summary>
         public GameObject arbitraryDataFieldPrefab;
+
+        /// <summary>
+        /// The collection to add the field instances to.
+        /// </summary>
         public GridObjectCollection arbitraryDataParent;
 
-        public void Start()
-        {
-            Patient test = new Patient("asdfas", new BLEAdvertiser(234, "asdfsdf"), new List<IArbitraryData>() { new ArbitraryStringValue("Address", "No address"), new ArbitraryBoolValue("Ceiliac", true)});
-            RegenerateFields(test);
-        }
-
+        /// <summary>
+        /// Regenerates the editor view.
+        /// </summary>
+        /// <param name="patient"></param>
         public void RegenerateFields(Patient patient)
         {
             var children = new List<GameObject>();
@@ -31,7 +39,6 @@ namespace CFA_HUD
                 InstantiateArbitraryDataField(data);
             }
         }
-
 
         private void InstantiateArbitraryDataField(IArbitraryData data)
         {

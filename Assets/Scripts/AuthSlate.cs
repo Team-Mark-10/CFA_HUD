@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
+
+// A script managing the API authentication slate.
 public class AuthSlate : MonoBehaviour
 {
     private const string ERROR_MSG = "Invalid url";
@@ -28,6 +30,9 @@ public class AuthSlate : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Event handler for the login button.
+    /// </summary>
     public void OnSubmitAuth()
     {
         errorText.text = "";

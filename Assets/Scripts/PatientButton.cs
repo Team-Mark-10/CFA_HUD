@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using CFA_HUD;
+
+// A button representing a patient.
 public class PatientButton : MonoBehaviour
 {
     public Patient Patient { get;  set; }

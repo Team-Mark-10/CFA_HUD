@@ -5,6 +5,9 @@ using TMPro;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using CFA_HUD;
 
+/// <summary>
+/// Represents a data field to be used in the arbitrary data field editor.
+/// </summary>
 public class ArbitraryInputField : MonoBehaviour
 {
     public TMPro.TMP_Text nameText;

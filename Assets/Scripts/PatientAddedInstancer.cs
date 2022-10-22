@@ -32,7 +32,7 @@ public class PatientAddedInstancer : MonoBehaviour
 
         Debug.Log("Manager Start Finished");
     }
-    void OnAdvertiserAdded(object sender, PatientAddedEventArgs args)
+    void OnAdvertiserAdded(object sender, PatientBroadcastEventArgs args)
     {
         Debug.Log("OnAdvertiserAdded");
         creationQueue.Add(args.Patient);

@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace CFA_HUD
 {
+    /// <summary>
+    /// A toggle on the patient selector.
+    /// </summary>
     public class PatientSelectorToggle : MonoBehaviour
     {
         private Patient patient;

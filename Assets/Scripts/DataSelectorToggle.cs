@@ -4,8 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 namespace CFA_HUD
 {
+    /// <summary>
+    /// A script for the toggle on the data selection list.
+    /// </summary>
     public class DataSelectorToggle : MonoBehaviour
     {
         private string data;

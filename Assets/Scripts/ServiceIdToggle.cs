@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A toggle that switches a graph on or off.
+/// </summary>
+
 public class ServiceIdToggle : MonoBehaviour
 {
     public string ServiceID { get; set; }
@@ -20,12 +24,6 @@ public class ServiceIdToggle : MonoBehaviour
         state = ServiceGraph.gameObject.activeSelf;
 
         GetComponent<Interactable>().OnClick.AddListener(() => OnToggle());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void OnToggle()
