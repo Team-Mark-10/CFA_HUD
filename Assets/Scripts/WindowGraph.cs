@@ -11,14 +11,16 @@ namespace CFA_HUD
     {
         public List<string> FilterIds { get; } = new();
         public string ServiceId { get => serviceId; set => serviceId = value; }
-     
+
+        public GameObject valueGroup;
+        public GameObject axisLabelGroup;
 
         [SerializeField]
         private string serviceId;
 
         private const int circleSize = 11;
         private const int DotCount = 15;
-       
+        private const int AmountOfAxisLabels = 7;
         private readonly float xSize = 50f;
 
         private readonly Color32[] Colours = new[] { new Color32(255, 0, 0, 100), new Color32(0, 255, 0, 100), new Color32(0, 0, 255, 100), new Color32(0, 255, 255, 100) };
@@ -42,10 +44,13 @@ namespace CFA_HUD
         private readonly Dictionary<string, Queue<CheckedContinuousData>> Lines = new();
         private readonly Dictionary<string, ContinuousData> Latest = new();
 
+        private readonly List<Text> valueTexts = new();
+        private readonly List<Text> axisLabels = new();
+
         private Font valueTextFont;
 
         private RectTransform graphContainer;
-
+        private GraphData graphData;
 
         private void Awake()
         {
@@ -54,7 +59,6 @@ namespace CFA_HUD
                 transform.Find("graphContainer").GetComponent<RectTransform>();
 
             // Sets the graph to regenerate every second.
-            InvokeRepeating("GenerateChart", 1.0f, 1.0f);
         }
 
         private void Start()
@@ -64,6 +68,31 @@ namespace CFA_HUD
 
             var selector = selectorGO.GetComponent<PatientSelectionManager>();
             selector.PatientSelectionUpdated += OnPatientSelectionUpdated;
+
+            SetGraphData(SelectGraphType(serviceId));
+
+            InvokeRepeating("GenerateChart", 1.0f, 1.0f);
+
+        }
+
+        private void SetGraphData(GraphData graphData)
+        {
+            Debug.Log(graphData.Title);
+            foreach(Transform child in axisLabels.Select(x => x.transform))
+            {
+                Destroy(child);
+            }
+            this.graphData = graphData;
+
+            transform.Find("MenuText").GetComponent<Text>().text = graphData.Title;
+
+            int i;
+            float increment = graphData.Ymax / 7;  //6 being the amount of y axis labels to be populated.
+            for (i = 0; i < AmountOfAxisLabels; i++)
+            {
+                //In the event that number is less then 7, this processes it as a float later on.
+                axisLabels.Add(GenerateYAxisLabel(graphData.AxisLabel, i, increment));
+            }
 
         }
 
@@ -123,15 +152,19 @@ namespace CFA_HUD
             for (int i = 0; i < checkedData.Count; i++)
             {
                 float confidence = checkedData[i].Data.Confidence;
-                
-                
-                
-                float xPosition = (checkedData.Count - i) * xSize;
-                float yPosition = (checkedData[i].Data.Value*100)/(graph.Ymax)/100*240+47; //factor of y max
 
-                if (yPosition >= 350)
+                float xPosition = (checkedData.Count - i - 1) * xSize;
+                // float yPosition = (checkedData[i].Data.Value*100)/(graph.Ymax)/100*240+47; //factor of y max
+                float yPosition = (checkedData[i].Data.Value / graph.Ymax * graphContainer.sizeDelta.y);
+                if (i == checkedData.Count - 1) { 
+                    Debug.Log((checkedData[i].Data.Value / graph.Ymax) + ", " + checkedData[i].Data.Value);
+                }
+               
+                var upperLimit = graphContainer.sizeDelta.y + graphContainer.anchoredPosition.y;
+
+                if (yPosition >= upperLimit)
                 {
-                    yPosition = 350;
+                    yPosition = upperLimit;
                     maxHeight = true;
 
                 }
@@ -163,8 +196,7 @@ namespace CFA_HUD
 
             float average = checkedData.ConvertAll((entry) => entry.Data.Value).Aggregate((a, b) => a + b) / checkedData.Count;
 
-            GameObject RollingValueText = CreateValueText(new Vector2(xPositionText, yPositionText), colour, average);
-            chartObjectList.Add(RollingValueText);
+            SetValueText(lineIndex, colour, average);
         }
 
         /// <summary>
@@ -257,71 +289,38 @@ namespace CFA_HUD
         /// <param name="colour"></param>
         /// <param name="BPM"></param>
         /// <returns></returns>
-        private GameObject CreateValueText(Vector2 anchoredPosition, Color32 colour, float value)
+        private void SetValueText(int lineIndex, Color32 colour, float value)
         {
+            var valueText = valueTexts[lineIndex];
 
-            GameObject valueTextGameObject = new("ValueText", typeof(Text));
-            valueTextGameObject.transform.SetParent(graphContainer, false);
-            RectTransform rectTransform = valueTextGameObject.GetComponent<RectTransform>();
-
-
-            rectTransform.anchoredPosition = anchoredPosition;
-            rectTransform.sizeDelta = new(80, 40);
-            rectTransform.anchorMin = new(0, 0);
-            rectTransform.anchorMax = new(0, 0);
-
-            Text text = valueTextGameObject.GetComponent<Text>();
-
-            text.font = valueTextFont;
-            text.fontSize = 24;
-            text.color = colour;
             value = (int)Math.Round(value, 0);
-            valueTextGameObject.GetComponent<UnityEngine.UI.Text>().text = value.ToString();
-
-            return valueTextGameObject;
-        }
-        private GameObject CreateTitleText(string name)
-        {
-            GameObject menuTextObject = new("MenuText", typeof(Text));
-            menuTextObject.transform.SetParent(graphContainer, false);
-            RectTransform rectTransform = menuTextObject.GetComponent<RectTransform>();
-            rectTransform.anchoredPosition = new(375, 150);
-            rectTransform.sizeDelta = new(250, 400);
-            rectTransform.anchorMin = new(0, 0);
-            rectTransform.anchorMax = new(0, 0);
-
-            Text text = menuTextObject.GetComponent<Text>();
-            text.font = valueTextFont;
-            text.fontSize = 35;
-            menuTextObject.GetComponent<UnityEngine.UI.Text>().text = name;
-
-            return menuTextObject;
+            valueText.text = value.ToString();
         }
 
-        private GameObject CreateYAxisLabel(string name, int pos, float number, bool decimals) {
-
+        private Text GenerateYAxisLabel(string name, int index, float increment) {
             GameObject YAxisLabel = new("YAxisLabel", typeof(Text));
-            YAxisLabel.transform.SetParent(graphContainer, false);
+            YAxisLabel.transform.SetParent(axisLabelGroup.transform, false);
             RectTransform rectTransform = YAxisLabel.GetComponent<RectTransform>();
-            rectTransform.anchoredPosition = new(20, pos + 40);
-            rectTransform.sizeDelta = new(80, 40);
+            rectTransform.anchoredPosition = new(20, graphContainer.sizeDelta.y / AmountOfAxisLabels * index);
+            rectTransform.sizeDelta = new(80, graphContainer.sizeDelta.y / AmountOfAxisLabels);
             rectTransform.anchorMin = new(0, 0);
             rectTransform.anchorMax = new(0, 0);
 
             Text text = YAxisLabel.GetComponent<Text>();
             text.font = valueTextFont;
+            text.alignment = TextAnchor.MiddleLeft;
             text.fontSize = 14;
 
-            if (decimals) {
-                number = (int)Math.Round(number, 0);
+            var value = increment * index;
+            if (increment > AmountOfAxisLabels) {
+                value = (int) Math.Round(value, 0);
             } else {
-                number = (float)Math.Round(number, 2);
+                value = (float) Math.Round(value, 2);
             }
 
-            YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " + number);
+            YAxisLabel.GetComponent<UnityEngine.UI.Text>().text = (name + " " + value);
 
-            return YAxisLabel;
-
+            return text;
 
         }
         /// <summary>
@@ -337,6 +336,16 @@ namespace CFA_HUD
 
             var ids = Lines.Keys.Union(Latest.Keys);
 
+            var count = 0;
+            foreach (var key in Latest.Keys)
+            {
+                if (!Lines.Keys.Contains(key))
+                {
+                    PrepareNewLine(Lines.Count + count); count += 1;
+                }
+
+            }
+
             foreach (var lineId in ids)
             {
                 if (Latest.ContainsKey(lineId))
@@ -351,47 +360,34 @@ namespace CFA_HUD
 
             Latest.Clear();
 
-
-
-
-            //Menu text to be taken from graphdata
-            GraphData GraphData = SelectGraphType(serviceId);
-            Debug.Log(serviceId);
-
-            GameObject MenuText = CreateTitleText(GraphData.Title);
-            chartObjectList.Add(MenuText);
-
-            //Generates Yaxis labels based off y 
-            int i;
-            float number = GraphData.Ymax / 6;  //6 being the amount of y axis labels to be populated.
-            for (i = 0; i < 7; i++) {
-
-                //In the event that number is less then 7, this processes it as a float later on.
-                if (number > 7) {
-                    GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i * 40, number * i, true);
-                    chartObjectList.Add(YAxisLabel);
-                } else
-                {
-                    GameObject YAxisLabel = CreateYAxisLabel(GraphData.AxisLabel, i * 40, number * i, false);
-                    chartObjectList.Add(YAxisLabel);
-                }
-
-            }
-
-
             //Run only for revelant ID's
             int index = 0;
             foreach (string key in Lines.Keys)
             {
                 if (!FilterIds.Contains(key))
                 {
-                    RenderLine(index, Lines[key].ToList(), GetColour(index), GraphData);
+                    RenderLine(index, Lines[key].ToList(), GetColour(index), graphData);
                 }
                 index++;
 
             }
 
 
+        }
+
+        private void PrepareNewLine(int newLineIndex)
+        {
+            GameObject ValueText = new("ValueText", typeof(Text));
+            ValueText.transform.SetParent(valueGroup.transform, false);
+            RectTransform rectTransform = ValueText.GetComponent<RectTransform>();
+
+            rectTransform.sizeDelta = new(80, 40);
+
+            Text text = ValueText.GetComponent<Text>();
+            text.font = valueTextFont;
+            text.color = GetColour(newLineIndex);
+
+            valueTexts.Add(text);
         }
 
         private void AppendAssumedLineEntry(string id)

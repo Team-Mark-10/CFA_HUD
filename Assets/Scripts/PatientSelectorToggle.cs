@@ -9,10 +9,10 @@ namespace CFA_HUD
     /// <summary>
     /// A toggle on the patient selector.
     /// </summary>
-    public class PatientSelectorToggle : MonoBehaviour
+    public class PatientSelectorToggle : MonoBehaviour, IPatientUser
     {
         private Patient patient;
-        public Patient Patient { get => patient; set => patient = value; }
+        public Patient Patient { get => patient; private set => patient = value; }
 
 
         public TMPro.TMP_Text nameText;
@@ -37,6 +37,11 @@ namespace CFA_HUD
         void Start()
         {
             nameText.text = Patient.Alias;
+        }
+
+        public void SetPatient(Patient p)
+        {
+            Patient = p;
         }
     }
 

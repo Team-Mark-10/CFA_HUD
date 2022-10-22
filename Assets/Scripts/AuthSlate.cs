@@ -3,18 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
-
+using TMPro;
 // A script managing the API authentication slate.
 public class AuthSlate : MonoBehaviour
 {
     private const string ERROR_MSG = "Invalid url";
     public BluetoothLEHRMParser parser;
 
-    public MRTKUGUIInputField apiField;
-    public MRTKUGUIInputField username;
-    public MRTKUGUIInputField password;
+    public TMP_InputField apiField;
+    public TMP_InputField username;
+    public TMP_InputField password;
 
-    public TMPro.TMP_Text errorText;
+    public TMP_Text errorText;
 
     // Start is called before the first frame update
     void Start()

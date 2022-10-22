@@ -21,7 +21,7 @@ public class PatientButtonList : PatientAddedInstancer, IPatientBroadcaster
     {
         base.AddNewGameObject(newInstance, patient);
         newInstance.GetComponent<Interactable>().OnClick.AddListener(() => OnPatientPressed(patient));
-        newInstance.GetComponent<PatientButton>().Patient = patient;
+        (newInstance.GetComponent(typeof(IPatientUser)) as IPatientUser).SetPatient(patient);
     }
 
     private void OnPatientPressed(Patient patient)

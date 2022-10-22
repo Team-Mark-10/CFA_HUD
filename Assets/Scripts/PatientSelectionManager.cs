@@ -3,6 +3,7 @@ using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -19,36 +20,38 @@ namespace CFA_HUD
             PatientActivation = patientActivation;
         }
     }
-    
+
     /// <summary>
     /// A script for the selection of patients on the admin slate. This controls which lines are visible on the graphs.
     /// </summary>
-    public class PatientSelectionManager : PatientAddedInstancer
+    /// 
+    [RequireComponent(typeof(PatientButtonList))]
+    public class PatientSelectionManager : MonoBehaviour
     {
         public event EventHandler<PatientSelectionUpdatedEventArgs> PatientSelectionUpdated;
+
+
+        private PatientButtonList buttonList;
+
+        private void Start()
+        {
+            buttonList = GetComponent<PatientButtonList>();
+
+            buttonList.PatientPressed += (_,_) => OnPatientSelectionUpdated();
+        }
 
         protected virtual void OnPatientSelectionUpdated()
         {
             Dictionary<string, bool> activation = new();
 
-            foreach (var toggle in Interactables)
+            foreach (var toggle in buttonList.Interactables.Select(x => x.GetComponent<PatientSelectorToggle>())) 
             {
-                activation.Add(toggle.GetComponent<PatientSelectorToggle>().Patient.Advertiser.Address.ToString(), toggle.IsToggled);
+                activation.Add(toggle.Patient.Advertiser.Address.ToString(), toggle.IsToggled);
             }
 
             Debug.Log(activation.ToString());
 
             PatientSelectionUpdated.Invoke(this, new PatientSelectionUpdatedEventArgs(activation));
-        }
-
-        protected override void AddNewGameObject(GameObject newInstance, Patient patient)
-        {
-            var toggle = newInstance.GetComponent<PatientSelectorToggle>();
-
-            toggle.Patient = patient;
-
-            toggle.AddToggleSelectedListener(() => OnPatientSelectionUpdated());
-            toggle.AddToggleDeselectedListener(() => OnPatientSelectionUpdated());
         }
 
     }

@@ -239,6 +239,11 @@ namespace CFA_HUD
 
     }
 
+    public interface IPatientUser
+    {
+        public void SetPatient(Patient p);
+    }
+
     /// <summary>
     /// A bluetooth advertiser representing a specific device.
     /// </summary>

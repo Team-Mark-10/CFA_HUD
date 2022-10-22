@@ -5,7 +5,7 @@ using TMPro;
 using CFA_HUD;
 
 // A button representing a patient.
-public class PatientButton : MonoBehaviour
+public class PatientButton : MonoBehaviour, IPatientUser
 {
     public Patient Patient { get;  set; }
 
@@ -15,5 +15,10 @@ public class PatientButton : MonoBehaviour
     void Start()
     {
         mainText.text = Patient.Alias;
+    }
+
+    public void SetPatient(Patient p)
+    {
+        Patient = p;
     }
 }

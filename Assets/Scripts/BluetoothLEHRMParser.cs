@@ -173,6 +173,7 @@ namespace CFA_HUD
             TestDBConnection();
 
             InvokeRepeating("SyncWithDB", syncPeriod, syncPeriod);
+
         }
 
         /**
@@ -293,10 +294,10 @@ namespace CFA_HUD
             // Checks if there are any new data types.
             foreach (var data in details.ContinuousData)
             {
-                if (!ServiceIDList.Contains(data.ServiceId))
+                if (!ServiceIDList.Contains(data.ServiceId) && data.ServiceId != null)
                 {
                      ServiceIDList.Add(data.ServiceId);
-                     NewServiceIDReceived.Invoke(this, new NewServiceIDEventArgs(data.ServiceId));
+                     NewServiceIDReceived?.Invoke(this, new NewServiceIDEventArgs(data.ServiceId));
                 }
 
             }
