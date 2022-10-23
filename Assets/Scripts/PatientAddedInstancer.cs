@@ -30,11 +30,9 @@ public class PatientAddedInstancer : MonoBehaviour
             InstantiateGameObject(patient);
         }
 
-        Debug.Log("Manager Start Finished");
     }
     void OnAdvertiserAdded(object sender, PatientBroadcastEventArgs args)
     {
-        Debug.Log("OnAdvertiserAdded");
         creationQueue.Add(args.Patient);
     }
 
@@ -57,15 +55,11 @@ public class PatientAddedInstancer : MonoBehaviour
 
 
         yield return new WaitForEndOfFrame();
-        Debug.Log("Bang");
         parentObject.UpdateCollection();
         yield return new WaitForEndOfFrame();
-        Debug.Log("Boom");
 
         //  parentObject.GetComponentInParent<ScrollingObjectCollection>().UpdateContent();
         cbox.enabled = false;
-
-        Debug.Log("Object instantiated");
     }
 
     protected virtual void AddNewGameObject(GameObject newInstance, Patient patient)
@@ -73,7 +67,12 @@ public class PatientAddedInstancer : MonoBehaviour
 
     }
 
-   
+    private void OnEnable()
+    {
+        parentObject.UpdateCollection();
+    }
+
+
     // Update is called once per frame
     public virtual void Update()
     {

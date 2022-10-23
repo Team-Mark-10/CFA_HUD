@@ -76,6 +76,8 @@ namespace CFA_HUD
         public event EventHandler<AdvertisementReceivedEventArgs> AdvertisementReceived;
         public event EventHandler<NewServiceIDEventArgs> NewServiceIDReceived;
 
+        public event EventHandler<bool> DBConnectionSuccess;
+
         /// <summary>
         /// All advertisements over the lifetime of the application.
         /// </summary>
@@ -165,7 +167,6 @@ namespace CFA_HUD
 
                 var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authenticationString));
 
-                Debug.Log(base64EncodedAuthenticationString);
                 apiClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse("Basic " + base64EncodedAuthenticationString);
 
             }
@@ -188,6 +189,8 @@ namespace CFA_HUD
             Debug.Log($"API reports {response.StatusCode}");
 
             dbConnectionActive = response.StatusCode == System.Net.HttpStatusCode.OK;
+
+            DBConnectionSuccess.Invoke(this, dbConnectionActive);
         }
 
         /// <summary>
@@ -248,7 +251,6 @@ namespace CFA_HUD
             }
 
             Patient newPatient = new(alias, advertiser);
-            Debug.Log($"Creating new patient {alias} with bid {advertiser.Address}");
 
             Patients.Add(newPatient);
             AdvertiserAdded.Invoke(this, new PatientBroadcastEventArgs(newPatient));
@@ -306,10 +308,17 @@ namespace CFA_HUD
             UploadCache.Add(details);
 
             AdvertisementReceived?.Invoke(this, new AdvertisementReceivedEventArgs(details));
+
+            // To clear memory
+            if (Advertisements.Count > ServiceIDList.Count * 1000)
+            {
+                Advertisements.RemoveRange(0, ServiceIDList.Count * 900);
+            }
         }
 #endif
         public List<Patient> GetPatients()
         {
+           
             return Patients;
         }
 

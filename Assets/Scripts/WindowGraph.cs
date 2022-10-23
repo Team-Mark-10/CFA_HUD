@@ -9,6 +9,7 @@ namespace CFA_HUD
 {
     public class WindowGraph : MonoBehaviour
     {
+        public static Dictionary<string, Color32> activeLineColours = new();
         public List<string> FilterIds { get; } = new();
         public string ServiceId { get => serviceId; set => serviceId = value; }
 
@@ -77,7 +78,6 @@ namespace CFA_HUD
 
         private void SetGraphData(GraphData graphData)
         {
-            Debug.Log(graphData.Title);
             foreach(Transform child in axisLabels.Select(x => x.transform))
             {
                 Destroy(child);
@@ -132,7 +132,6 @@ namespace CFA_HUD
 
             foreach (var activationState in e.PatientActivation)
             {
-                Debug.Log($"{activationState.Key} -- {activationState.Value}");
                 if (!activationState.Value)
                 {
                     FilterIds.Add(activationState.Key);
@@ -156,9 +155,7 @@ namespace CFA_HUD
                 float xPosition = (checkedData.Count - i - 1) * xSize;
                 // float yPosition = (checkedData[i].Data.Value*100)/(graph.Ymax)/100*240+47; //factor of y max
                 float yPosition = (checkedData[i].Data.Value / graph.Ymax * graphContainer.sizeDelta.y);
-                if (i == checkedData.Count - 1) { 
-                    Debug.Log((checkedData[i].Data.Value / graph.Ymax) + ", " + checkedData[i].Data.Value);
-                }
+
                
                 var upperLimit = graphContainer.sizeDelta.y + graphContainer.anchoredPosition.y;
 
@@ -341,7 +338,7 @@ namespace CFA_HUD
             {
                 if (!Lines.Keys.Contains(key))
                 {
-                    PrepareNewLine(Lines.Count + count); count += 1;
+                    PrepareNewLine(key, Lines.Count + count); count += 1;
                 }
 
             }
@@ -366,7 +363,7 @@ namespace CFA_HUD
             {
                 if (!FilterIds.Contains(key))
                 {
-                    RenderLine(index, Lines[key].ToList(), GetColour(index), graphData);
+                    RenderLine(index, Lines[key].ToList(), activeLineColours[key], graphData);
                 }
                 index++;
 
@@ -375,8 +372,13 @@ namespace CFA_HUD
 
         }
 
-        private void PrepareNewLine(int newLineIndex)
+        private void PrepareNewLine(string newKey, int newLineIndex)
         {
+            if (!activeLineColours.ContainsKey(newKey))
+            {
+                activeLineColours.Add(newKey, GetColour(activeLineColours.Count));
+            }
+
             GameObject ValueText = new("ValueText", typeof(Text));
             ValueText.transform.SetParent(valueGroup.transform, false);
             RectTransform rectTransform = ValueText.GetComponent<RectTransform>();
@@ -385,7 +387,8 @@ namespace CFA_HUD
 
             Text text = ValueText.GetComponent<Text>();
             text.font = valueTextFont;
-            text.color = GetColour(newLineIndex);
+            text.color = activeLineColours[newKey];
+            text.fontSize = 24;
 
             valueTexts.Add(text);
         }

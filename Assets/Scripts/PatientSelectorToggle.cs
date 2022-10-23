@@ -2,6 +2,7 @@ using Microsoft.MixedReality.Toolkit.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace CFA_HUD
@@ -16,6 +17,13 @@ namespace CFA_HUD
 
 
         public TMPro.TMP_Text nameText;
+        // Start is called before the first frame update
+        void Start()
+        {
+            nameText.text = Patient.Alias;
+            IsToggled = true;
+
+        }
         public bool IsToggled
         {
             get { return GetComponent<Interactable>().IsToggled; }
@@ -33,11 +41,7 @@ namespace CFA_HUD
 
         }
 
-        // Start is called before the first frame update
-        void Start()
-        {
-            nameText.text = Patient.Alias;
-        }
+
 
         public void SetPatient(Patient p)
         {

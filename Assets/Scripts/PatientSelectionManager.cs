@@ -49,7 +49,6 @@ namespace CFA_HUD
                 activation.Add(toggle.Patient.Advertiser.Address.ToString(), toggle.IsToggled);
             }
 
-            Debug.Log(activation.ToString());
 
             PatientSelectionUpdated.Invoke(this, new PatientSelectionUpdatedEventArgs(activation));
         }

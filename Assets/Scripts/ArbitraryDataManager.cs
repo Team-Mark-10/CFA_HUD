@@ -21,7 +21,7 @@ namespace CFA_HUD
         /// <summary>
         /// The collection to add the field instances to.
         /// </summary>
-        public GridObjectCollection arbitraryDataParent;
+        public GameObject arbitraryDataParent;
 
         /// <summary>
         /// Regenerates the editor view.
@@ -42,22 +42,22 @@ namespace CFA_HUD
 
         private void InstantiateArbitraryDataField(IArbitraryData data)
         {
-            StartCoroutine(InstantiateArbitraryDataFieldCoroutine(data));
+                InstantiateArbitraryDataFieldCoroutine(data);
         }
 
-        private IEnumerator InstantiateArbitraryDataFieldCoroutine(IArbitraryData data)
+        private void InstantiateArbitraryDataFieldCoroutine(IArbitraryData data)
         {
             var newInstance = Instantiate(arbitraryDataFieldPrefab, arbitraryDataParent.transform);
 
             newInstance.GetComponent<ArbitraryInputField>().ArbitraryData = data;
 
-            var scrollObject = arbitraryDataParent.GetComponentInParent<ScrollingObjectCollection>();
+            //var scrollObject = arbitraryDataParent.GetComponentInParent<ScrollingObjectCollection>();
 
-            scrollObject.GetComponentInChildren<ClippingBox>().enabled = true;
-            yield return new WaitForEndOfFrame();
-            scrollObject.GetComponentInChildren<ClippingBox>().enabled = false;
-            arbitraryDataParent.UpdateCollection();
-            scrollObject.UpdateContent();
+            //scrollObject.GetComponentInChildren<ClippingBox>().enabled = true;
+            //yield return new WaitForEndOfFrame();
+            //scrollObject.GetComponentInChildren<ClippingBox>().enabled = false;
+            //arbitraryDataParent.UpdateCollection();
+            //scrollObject.UpdateContent();
 
         }
     }

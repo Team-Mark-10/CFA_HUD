@@ -45,7 +45,6 @@ public class PatientDetailsViewer : MonoBehaviour
 
     public void ToggleEditing()
     {
-        Debug.Log("Toggling");
         if (isEditing) StopEditing();
         else StartEditing();
     }
@@ -54,7 +53,6 @@ public class PatientDetailsViewer : MonoBehaviour
     private void StartEditing()
     {
 
-        Debug.Log("Start editing");
         isEditing = true;
 
         viewer.SetActive(false);
@@ -66,7 +64,6 @@ public class PatientDetailsViewer : MonoBehaviour
 
     private bool StopEditing()
     {
-        Debug.Log("Stop editin");
         isEditing = false;
 
 
@@ -126,8 +123,6 @@ public class PatientDetailsViewer : MonoBehaviour
             s.AppendJoin(":", ad.GetName(), ad.ToDisplayFormat());
             s.AppendLine();
         }
-
-        Debug.Log(Patient.ToJSONFormat());
 
         detailsText.text = s.ToString();
     }
